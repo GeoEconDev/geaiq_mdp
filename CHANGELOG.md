@@ -1,8 +1,45 @@
 ﻿# CHANGELOG
 
-Historial de cambios del proyecto GeaIQ Metadata.
+Historial de cambios del proyecto geaiq_mdp.
 
 El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
+
+---
+
+## 2026-05-22 — Se agrega CHANGELOG
+
+**Prompt:**
+> "Agrega un CHANGELOG a todos los repositorios del workspace GEAIQ: geaiq-data-stack, geaiq_airflow_dag, geaiq_api, geaiq_metadata, geaiq_mdp. Deja una primera anotación indicando que se agregó el CHANGELOG, y luego otra anotación con los cambios que se hicieron para este requerimiento."
+
+**Resumen:** Se establece este archivo de historial de cambios para el procesador de metadata GeaIQ.
+
+---
+
+## 2026-05-22 — Flujo de validación y deploy de metadata para Responsables de Datos
+
+**Prompt:**
+> "Necesitamos cerrar el flujo para los responsables de datos. Los responsables de datos (RD) es un rol que tiene la responsabilidad de subir datos a la base de datos de la GeaIQ API y garantizar la calidad de esos datos. Para ello usan GeaIQ MDP que es una librería que procesa los archivos YAML cuyo DSL (GeaIQ DSL) permite identificar las fuentes de datos [...] Entonces los RD escriben los MD en la UI de la API, luego envían a validar el archivo y una vez que están validados, se puede deployar, o incluso revertir los cambios. Todo esto usando la herramienta giqmd. Pero eso ahora ocurre todo en la UI de la API."
+
+**Resumen:** Se integra `giqmd` como herramienta de validación y deploy dentro del flujo de Airflow. El comando `giqmd --context docker --commit <sha>` descarga el tarball del commit desde GitHub y ejecuta `check`, `deploy` o `reset` sin necesidad de Google Cloud Run. El resultado se sube a la GeaIQ API vía `--upload-output`.
+
+### Cambios
+
+**Utilizado por el nuevo DAG `metadata_processor`**
+- `giqmd --context docker`: descarga el tarball del commit indicado desde la GitHub API (requiere `GIT_TOKEN` y `METADATA_GIT_REPO`), sin depender de Cloud Run.
+- `giqmd --upload-output`: sube el reporte HTML generado a `POST /api/v1/r/{step}/{status}` en la GeaIQ API.
+- Flags combinados: `--context docker --commit <sha> --upload-output <operation> --format html --output report.<slug>.<op>.<target>.html <file_path>`
+
+**Instalación en Airflow**
+- El paquete se instala directamente desde GitHub: `git+https://github.com/GeoEconDev/geaiq_mdp.git` (no PyPI).
+
+**Variables de entorno requeridas en el worker de Airflow**
+
+| Variable | Descripción |
+|---|---|
+| `GIT_TOKEN` | GitHub PAT para descargar el tarball del commit |
+| `METADATA_GIT_REPO` | URL de la API de GitHub del repo de metadata |
+| `GEAIQ_API_URL` | URL base de la GeaIQ API (para subir reportes) |
+| `GEAIQ_API_TOKEN` | Token de autenticación de la GeaIQ API |
 
 ---
 
