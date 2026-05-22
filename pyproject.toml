@@ -43,7 +43,7 @@ exclude = ["tests*", "sql*"]
 md-check-all = "geoecon_metadata.check:check_all"
 md-check-files = "geoecon_metadata.check:check_files"
 md-check-commit = "geoecon_metadata.check:check_commit"
-giqmd = "geoecon_metadata.gemd:cli"
+giqmd = "geoecon_metadata.giqmd:cli"
 
 [project.urls]
 Homepage = "https://github.com/GeoEconDev/metadata"

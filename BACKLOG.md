@@ -38,9 +38,9 @@ Criterio de priorización:
 
 ---
 
-### BUG-03 · `pip install` interno en `gemd.py`
+### BUG-03 · `pip install` interno en `giqmd.py`
 
-**Archivo**: [src/geoecon_metadata/gemd.py:63-74](src/geoecon_metadata/gemd.py)
+**Archivo**: [src/geoecon_metadata/giqmd.py:63-74](src/geoecon_metadata/giqmd.py)
 
 **Problema**: El bloque `except ModuleNotFoundError` invoca los internals de pip para auto-instalarse. Esto es frágil (el API interno de pip no es estable), silencia el error real, y puede instalar versiones incorrectas en entornos controlados (virtualenv, Docker). En producción ya hay un `Dockerfile` que garantiza las dependencias — este código nunca debería ejecutarse en ese contexto.
 
@@ -137,7 +137,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-07 · Mezcla de idiomas en mensajes al usuario y logs
 
-**Archivos**: múltiples, principalmente [src/geoecon_metadata/gemd.py](src/geoecon_metadata/gemd.py), `checker.py`, `deployer.py`
+**Archivos**: múltiples, principalmente [src/geoecon_metadata/giqmd.py](src/geoecon_metadata/giqmd.py), `checker.py`, `deployer.py`
 
 **Problema**: Los mensajes alternan español e inglés sin criterio. Dificulta hacer `grep` de errores en logs de producción y confunde a colaboradores que solo hablan uno de los dos idiomas.
 

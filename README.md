@@ -150,7 +150,7 @@ giqmd --target dev init
 geaiq_metadata/
 ├── src/
 │   └── geoecon_metadata/      # Paquete principal
-│       ├── gemd.py            # Entry point CLI (click)
+│       ├── giqmd.py            # Entry point CLI (click)
 │       ├── checker.py         # Orquesta la validación de fuentes
 │       ├── deployer.py        # Orquesta el despliegue a la API
 │       ├── parsers.py         # Parse YAML → modelos Pydantic

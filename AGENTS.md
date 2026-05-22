@@ -16,7 +16,7 @@ No es una aplicación web ni un servicio. Es un pipeline de procesamiento de dat
 
 | Punto de entrada | Descripción |
 |---|---|
-| `src/geoecon_metadata/gemd.py` | CLI principal (Click). Toda funcionalidad pública parte de aquí. |
+| `src/geoecon_metadata/giqmd.py` | CLI principal (Click). Toda funcionalidad pública parte de aquí. |
 | `src/geoecon_metadata/checker.py` | `checker()` — valida fuentes READY |
 | `src/geoecon_metadata/deployer.py` | `deployer()` — despliega fuentes VALID |
 | `src/geoecon_metadata/data.py` | `load_data()` — **debe llamarse primero** para cargar anclas YAML globales |
