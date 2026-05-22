@@ -16,6 +16,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## [0.0.2] — 2026-05-22
+
+### Cambiado
+- Repositorio separado en dos: `geaiq_metadata` (datos YAML) y `geaiq_mdp` (código Python/tooling).
+- Comando CLI renombrado de `gemd` a `giqmd`.
+- Módulo de entrada renombrado de `gemd.py` a `giqmd.py`.
+
+---
+
 ## [0.0.1] — En desarrollo
 
 ### Agregado
