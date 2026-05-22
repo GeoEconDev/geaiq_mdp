@@ -1,0 +1,3 @@
+
+class SemanticError(Exception):
+    pass

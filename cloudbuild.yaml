@@ -1,0 +1,27 @@
+steps:
+  # 1. Construcción de la imagen con Cloud Build
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--no-cache', '-t', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/metadata:develop', '.', '-f', 'Dockerfile']
+
+  # 2. Subida de la imagen a Container Registry o Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/metadata:develop']
+
+  # 3. Desplegar la Job en Cloud Run (en vez de un servicio)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'jobs'
+      - 'deploy'
+      - 'metadata'
+      - '--image=us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/metadata:develop'
+      - '--region=us-central1' # Cambiar a la región deseada
+      - '--task-timeout=36000s' # Opcional: ajustar el timeout de cada ejecución
+      - '--max-retries=3' # Opcional: configurar reintentos
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/metadata:develop'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

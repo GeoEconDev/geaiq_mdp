@@ -1,0 +1,60 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Sync repos",
+            "type": "shell",
+            "command": "bash -c 'make sync'"
+        },
+        {
+            "label": "Reset Metadata",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "reset-metadata",
+                "file=${relativeFile}",
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "CLOUDSDK_CORE_DISABLE_INTERACTIVE_PROMPTS": "1" // Importante para evitar prompts interactivos
+                }
+            }
+        },
+        {
+            "label": "Check Metadata",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "check-metadata",
+                "file=${relativeFile}",
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "CLOUDSDK_CORE_DISABLE_INTERACTIVE_PROMPTS": "1" // Importante para evitar prompts interactivos
+                }
+            }
+        },
+        {
+            "label": "Deploy Metadata",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "deploy-metadata",
+                "file=${relativeFile}",
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "options": {
+                "env": {
+                    "CLOUDSDK_CORE_DISABLE_INTERACTIVE_PROMPTS": "1" // Importante para evitar prompts interactivos
+                }
+            }
+        }
+    ]
+}
