@@ -1,4 +1,4 @@
-# BACKLOG
+﻿# BACKLOG
 
 Ítems derivados de la revisión de código (2026-05-19). Ordenados por prioridad dentro de cada categoría.
 
@@ -46,7 +46,7 @@ Criterio de priorización:
 
 **Acción**: Eliminar el bloque `try/except` completo. Reemplazar con un mensaje claro:
 ```
-ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar gemd.
+ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar giqmd.
 ```
 
 **Esfuerzo**: XS
@@ -98,7 +98,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 **Archivo**: [src/geoecon_metadata/geoecon_api.py](src/geoecon_metadata/geoecon_api.py)
 
-**Problema**: El método existe pero lanza `NotImplementedError` (o equivalente). Si `gemd init --update` intenta actualizar períodos, falla en runtime sin que el usuario tenga forma de saberlo de antemano.
+**Problema**: El método existe pero lanza `NotImplementedError` (o equivalente). Si `giqmd init --update` intenta actualizar períodos, falla en runtime sin que el usuario tenga forma de saberlo de antemano.
 
 **Acción**: Implementar el método o, si la API no soporta el endpoint todavía, agregar un `logging.warning` explícito y omitir la operación sin abortar.
 

@@ -1,4 +1,4 @@
-# DESIGN.md — Decisiones de arquitectura
+﻿# DESIGN.md — Decisiones de arquitectura
 
 Documento vivo que registra las decisiones técnicas importantes del proyecto y el razonamiento detrás de ellas.
 
@@ -7,7 +7,7 @@ Documento vivo que registra las decisiones técnicas importantes del proyecto y 
 GeaIQ Metadata resuelve un problema específico: existe un equipo distribuido de analistas que produce descripciones de datasets geoeconómicos en archivos YAML, y esos datasets deben terminar en una API REST con sus observaciones cargadas en BigQuery. El tooling actúa como el puente entre ambos mundos.
 
 ```
-Analista → YAML → gemd check → gemd deploy → GeaIQ API / BigQuery
+Analista → YAML → giqmd check → giqmd deploy → GeaIQ API / BigQuery
 ```
 
 ## Decisiones arquitectónicas
@@ -309,8 +309,8 @@ processing:
 ```
 
 **Comandos**:
-- `gemd menu check` — valida la estructura de los archivos `menu/`.
-- `gemd tags upload` — sube los tags del menú a la API (`ui/tags`).
+- `giqmd menu check` — valida la estructura de los archivos `menu/`.
+- `giqmd tags upload` — sube los tags del menú a la API (`ui/tags`).
 
 ---
 
@@ -320,7 +320,7 @@ processing:
 |---|---|---|
 | Google BigQuery | Validación de queries (dry-run) y ejecución de datos | ADC / Service Account |
 | Google Drive | Descarga de shapefiles | ADC con scope Drive |
-| Google Sheets | Importación de metadatos vía `gemd import` | ADC con scope Sheets |
+| Google Sheets | Importación de metadatos vía `giqmd import` | ADC con scope Sheets |
 | Google Cloud Storage | Publicación de reportes HTML | ADC |
 | Google Cloud Run | Ejecución remota del pipeline | `cloudbuild.yaml` |
 | GitHub API | Contexto `docker` — lista de archivos por commit | `GIT_TOKEN` |

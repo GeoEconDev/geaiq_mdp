@@ -1,4 +1,4 @@
-# GeaIQ Metadata
+﻿# GeaIQ Metadata
 
 Plataforma CLI para validar y desplegar metadatos geoeconómicos en la API de GeaIQ. Los datos se describen en archivos YAML que el tooling procesa para validarlos contra BigQuery y cargarlos en los entornos de la API.
 
@@ -79,14 +79,14 @@ draft → ready → (check) → valid → (deploy) → deployed/done
 
 1. **Crear** el archivo `metadata/{pais}/{slug}.yml` con `status: draft`.
 2. Completar todos los campos requeridos y cambiar a `status: ready`.
-3. **Validar** con `gemd check`:
+3. **Validar** con `giqmd check`:
    ```bash
-   gemd check metadata/argentina/mi_fuente.yml
+   giqmd check metadata/argentina/mi_fuente.yml
    ```
 4. Si el check pasa sin errores, cambiar a `status: valid`.
-5. **Desplegar** con `gemd deploy`:
+5. **Desplegar** con `giqmd deploy`:
    ```bash
-   gemd --target dev deploy metadata/argentina/mi_fuente.yml
+   giqmd --target dev deploy metadata/argentina/mi_fuente.yml
    ```
 6. Una vez desplegado en dev, repetir con `--target prod`.
 
@@ -95,7 +95,7 @@ draft → ready → (check) → valid → (deploy) → deployed/done
 ## Referencia CLI
 
 ```
-gemd [OPTIONS] COMMAND [ARGS]...
+giqmd [OPTIONS] COMMAND [ARGS]...
 
 Opciones globales:
   --context [none|file|all|stdin|commit|docker]
@@ -124,22 +124,22 @@ Comandos:
 
 ```bash
 # Validar un archivo individual
-gemd check metadata/argentina/arg2023-prestamos-adm01.yml
+giqmd check metadata/argentina/arg2023-prestamos-adm01.yml
 
 # Validar todos los archivos en el contexto actual de git (archivos modificados)
-gemd --context commit check
+giqmd --context commit check
 
 # Desplegar en dev con reporte HTML
-gemd --target dev deploy --format html --output report.html metadata/argentina/mi_fuente.yml
+giqmd --target dev deploy --format html --output report.html metadata/argentina/mi_fuente.yml
 
 # Desplegar en producción
-gemd --target prod deploy metadata/argentina/mi_fuente.yml
+giqmd --target prod deploy metadata/argentina/mi_fuente.yml
 
 # Limpiar caché de una fuente
-gemd reset metadata/argentina/mi_fuente.yml
+giqmd reset metadata/argentina/mi_fuente.yml
 
 # Inicializar datos de referencia (solo una vez por entorno)
-gemd --target dev init
+giqmd --target dev init
 ```
 
 ---
@@ -303,6 +303,6 @@ make sync
 | `make clean-reports` | Borra reportes locales `report.*` |
 | `make clean-logs` | Borra `~/.geoecon-logs/` |
 | `make show-status` | Lista el `status:` de todos los archivos de metadatos |
-| `make check-metadata file=metadata/pais/fuente.yml` | Ejecuta `gemd check` en Cloud Run |
-| `make deploy-metadata file=metadata/pais/fuente.yml` | Ejecuta `gemd deploy` en Cloud Run |
-| `make reset-metadata file=metadata/pais/fuente.yml` | Ejecuta `gemd reset` en Cloud Run |
+| `make check-metadata file=metadata/pais/fuente.yml` | Ejecuta `giqmd check` en Cloud Run |
+| `make deploy-metadata file=metadata/pais/fuente.yml` | Ejecuta `giqmd deploy` en Cloud Run |
+| `make reset-metadata file=metadata/pais/fuente.yml` | Ejecuta `giqmd reset` en Cloud Run |

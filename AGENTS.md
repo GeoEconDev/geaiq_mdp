@@ -1,10 +1,10 @@
-# AGENTS.md — Guía para agentes de IA
+﻿# AGENTS.md — Guía para agentes de IA
 
 Este archivo describe el proyecto para agentes de IA (Claude Code, Copilot, etc.) que necesiten trabajar en el repositorio.
 
 ## Qué hace este proyecto
 
-GeaIQ Metadata es una herramienta CLI (`gemd`) que:
+GeaIQ Metadata es una herramienta CLI (`giqmd`) que:
 1. Lee archivos YAML en `metadata/{país}/{fuente}.yml`
 2. Los valida (dry-run en BigQuery o descarga de shapefiles)
 3. Los despliega a la API REST de GeaIQ
@@ -75,7 +75,7 @@ En `src/geoecon_metadata/enums.py`:
 - Ubicación: `~/.geoecon-cache/`
 - Formato: pickle
 - Clave: slug de la fuente
-- Se invalida con `gemd --invalid-cache` o `gemd --clean-full-cache`
+- Se invalida con `giqmd --invalid-cache` o `giqmd --clean-full-cache`
 - **El caché puede quedar desincronizado si cambia la estructura de modelos Pydantic.** En ese caso borrar manualmente o usar `--clean-full-cache`.
 
 ## Tests
@@ -93,9 +93,9 @@ Los tests son principalmente de integración y requieren credenciales GCP activa
 1. Crear `metadata/{país}/{slug}.yml` con `status: draft`.
 2. Completar `description`, `ref`, `source_type`, `source`, `columns`.
 3. Cambiar a `status: ready`.
-4. Ejecutar `gemd check metadata/{país}/{slug}.yml`.
+4. Ejecutar `giqmd check metadata/{país}/{slug}.yml`.
 5. Si pasa, cambiar a `status: valid`.
-6. Ejecutar `gemd --target dev deploy metadata/{país}/{slug}.yml`.
+6. Ejecutar `giqmd --target dev deploy metadata/{país}/{slug}.yml`.
 7. Verificar en el entorno dev; si todo está bien, `--target prod`.
 
 ## Cómo agregar un nuevo país

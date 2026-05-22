@@ -1,4 +1,4 @@
-# CHANGELOG
+﻿# CHANGELOG
 
 Historial de cambios del proyecto GeaIQ Metadata.
 
@@ -21,7 +21,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 ### Agregado
 
 **Pipeline principal**
-- CLI `gemd` con comandos `init`, `check`, `deploy`, `reset`, `import`, `menu`, `tags`.
+- CLI `giqmd` con comandos `init`, `check`, `deploy`, `reset`, `import`, `menu`, `tags`.
 - Contextos de ejecución: `none`, `file`, `all`, `stdin`, `commit`, `docker`.
 - Soporte de entornos: `dev`, `prod`, `test`, `local`.
 - Reporte de ejecución en formatos `plain`, `markdown`, `html`, `json`.
@@ -57,14 +57,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 **Caché**
 - Caché pickle local en `~/.geoecon-cache/`.
 - Invalidación con `--invalid-cache` y `--clean-full-cache`.
-- Comando `gemd reset` para limpiar caché, logs y shapefiles por fuente.
+- Comando `giqmd reset` para limpiar caché, logs y shapefiles por fuente.
 
 **Infraestructura**
 - `Dockerfile` para Cloud Run Jobs (Python 3.11 slim).
 - `cloudbuild.yaml`: build → push a Artifact Registry → deploy Cloud Run Job.
 - `Makefile` con targets `sync`, `check-metadata`, `deploy-metadata`, `reset-metadata`.
-- `gemd import` para ingestión desde Google Sheets.
-- `gemd menu check` / `gemd tags upload` para gestión de menús y tags.
+- `giqmd import` para ingestión desde Google Sheets.
+- `giqmd menu check` / `giqmd tags upload` para gestión de menús y tags.
 
 **Cobertura de países** (archivos de metadatos presentes)
 - Argentina, Brasil, Colombia, Chile, Perú, México, Bolivia, Paraguay, Uruguay, Ecuador, Venezuela, Guatemala, Honduras, El Salvador, Nicaragua, Costa Rica, Panamá, Cuba, República Dominicana, Haití, Belice, Jamaica, Puerto Rico.
@@ -87,7 +87,7 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 Al actualizar modelos Pydantic, el caché pickle existente puede quedar inválido. Ejecutar:
 
 ```bash
-gemd --clean-full-cache check ...
+giqmd --clean-full-cache check ...
 # o manualmente:
 rm -rf ~/.geoecon-cache/
 ```
