@@ -1,0 +1,31 @@
+{
+  "seed_version": "1.5",
+  "created_at": "2026-05-27T00:00:00-03:00",
+  "updated_at": "2026-05-27T00:00:00-03:00",
+  "modules": [
+    "giqmd-cli",
+    "persistent-anchor-yaml",
+    "processors-bigquery-shape",
+    "geoecon-api-client",
+    "pydantic-models",
+    "report-engine"
+  ],
+  "description": "CLI `giqmd` (paquete geoecon_metadata): valida y despliega metadatos geoeconómicos (YAML del repo geaiq_metadata) a la API de GeaIQ + warehouse (BigQuery/PostgreSQL). Pipeline parse→check→deploy→report. Corre local o como Cloud Run Job. Stack: Python 3.11, Pydantic v2, Click, ruamel.yaml (anclas persistentes), GCP (BigQuery/Drive/GCS). Split del repo metadata el 22 May 2026 (code aquí, datos en geaiq_metadata).",
+  "structure": {
+    "context.md": "Briefing del proyecto",
+    "roots_seed.md": "Copia local del seed v1.5",
+    "journal/": "diary, notes, changelog",
+    "tasks/": "todo (backlog + deuda técnica del BACKLOG.md), tasks (en progreso)",
+    "debug/": "errors-log, fixes-log, migrations",
+    "design/": "decisions (ADRs portados del DESIGN.md), sketchbook",
+    "docs/": "architecture, cli-and-workflow, models-yaml-schema, tests, commits",
+    "hooks/": "session-start/end, on-task-done, on-topic-shift, on-error, on-fix, on-seed-*",
+    "skills/": "patterns, prompts, workflows",
+    "workbench/": "materiales de referencia del usuario"
+  },
+  "active_branch": "main",
+  "current_feature": "Sesión 27 May — bootstrap del .roots/ del repo (documentación técnica completa releída de README/DESIGN/AGENTS/BACKLOG/CHANGELOG + código). Sin cambios de código. Relevamiento de tests: 5 archivos en src/tests/, pytest NO declarado en pyproject (falta cablear). Backlog de deuda técnica portado a tasks/todo.md (BUG-01/02/03, TECH-01..10).",
+  "working_mode": "source",
+  "repo": "github.com/GeoEconDev/geaiq_mdp",
+  "project": "geaiq_mdp"
+}
