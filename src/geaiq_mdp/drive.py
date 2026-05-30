@@ -1,6 +1,6 @@
-from pathlib import Path
+﻿from pathlib import Path
 from googleapiclient.http import MediaFileUpload
-from geoecon_metadata.gcp import setup_drive
+from geaiq_mdp.gcp import setup_drive
 
 
 def get_drive_id(shared_drive_name):

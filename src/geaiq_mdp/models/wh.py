@@ -1,10 +1,10 @@
-from datetime import date
+﻿from datetime import date
 from typing import ClassVar, Optional
 from uuid import UUID
 
 from pydantic import PrivateAttr, model_validator, root_validator
 
-from geoecon_metadata.enums import ObservableScaleTypeEnum
+from geaiq_mdp.enums import ObservableScaleTypeEnum
 from .geoecon_api import GeoEconAPIModel
 
 

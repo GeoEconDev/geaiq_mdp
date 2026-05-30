@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+﻿FROM python:3.11-slim
 
 # Create a working directory
 WORKDIR /app
@@ -17,12 +17,12 @@ COPY . /app/
 RUN pip install --no-cache-dir .
 
 # Create the data directory
-RUN mkdir -p /tmp/geoecon_metadata/data \
-            /tmp/geoecon_metadata/menu \
-            /tmp/geoecon_metadata/metadata
+RUN mkdir -p /tmp/geaiq_mdp/data \
+            /tmp/geaiq_mdp/menu \
+            /tmp/geaiq_mdp/metadata
 
 # Set the entrypoint (adjust as needed)
-ENTRYPOINT ["giqmd", "--context", "docker", "--root", "/tmp/geoecon_metadata", "--target", "dev"]
+ENTRYPOINT ["giqmd", "--context", "docker", "--root", "/tmp/geaiq_mdp", "--target", "dev"]
 # docker run --rm -e GIT_COMMIT=df5f2efe -e GIT_TOKEN={TOKEN} -it metadata:latest check \
 #   --format html --output arg_2019_concentracion_electoral_adm2.html \
 #   metadata\argentina\arg_2019_concentracion_electoral_adm2.yml

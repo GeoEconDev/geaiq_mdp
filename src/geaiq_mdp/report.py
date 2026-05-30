@@ -1,4 +1,4 @@
-import base64
+﻿import base64
 from datetime import datetime
 import json
 import os
@@ -15,8 +15,8 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt 
 
-from geoecon_metadata.utils import memory_time_logger
-from geoecon_metadata.version import get_version_string
+from geaiq_mdp.utils import memory_time_logger
+from geaiq_mdp.version import get_version_string
 
 TYPE_MESSAGE_STYLE_MAP = {
     "info": "color:darkgray",

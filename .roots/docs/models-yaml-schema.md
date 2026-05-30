@@ -1,6 +1,6 @@
-# Modelos Pydantic + esquema YAML de metadatos
+﻿# Modelos Pydantic + esquema YAML de metadatos
 
-> Modelos en `src/geoecon_metadata/models/` + `enums.py`. El YAML que consumen vive en `geaiq_metadata`.
+> Modelos en `src/geaiq_mdp/models/` + `enums.py`. El YAML que consumen vive en `geaiq_metadata`.
 
 ## Modelos (`models/`, Pydantic v2)
 

@@ -1,4 +1,4 @@
-# Arquitectura — geaiq_mdp
+﻿# Arquitectura — geaiq_mdp
 
 > Cómo funciona el pipeline `giqmd` por dentro. Derivado de DESIGN.md + lectura del código (27 May 2026).
 
@@ -14,7 +14,7 @@ metadata/{país}/*.yml
   → report (plain/md/html/json)         # → GCS público + notificación Google Chat
 ```
 
-## Mapa de módulos (`src/geoecon_metadata/`)
+## Mapa de módulos (`src/geaiq_mdp/`)
 
 **Pipeline core**
 - `giqmd.py` — entry point Click (~520 líneas). Opciones globales (`--context`, `--target`, `--root`, cache, `--debug`, `--chat-webhook`). ⚠️ tiene un bloque `pip install` interno (líneas ~63-74) frágil → BUG-03.

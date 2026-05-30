@@ -1,4 +1,4 @@
-from geoecon_metadata.report import Reportable, format_message_markdown
+﻿from geaiq_mdp.report import Reportable, format_message_markdown
 import pandas as pd
 #import pytest
 

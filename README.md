@@ -56,7 +56,7 @@ https://www.googleapis.com/auth/spreadsheets,\
 https://www.googleapis.com/auth/bigquery
 ```
 
-Variables de entorno relevantes (ver también `src/geoecon_metadata/gcp.py`):
+Variables de entorno relevantes (ver también `src/geaiq_mdp/gcp.py`):
 
 | Variable | Descripción |
 |---|---|
@@ -149,7 +149,7 @@ giqmd --target dev init
 ```
 geaiq_metadata/
 ├── src/
-│   └── geoecon_metadata/      # Paquete principal
+│   └── geaiq_mdp/      # Paquete principal
 │       ├── giqmd.py            # Entry point CLI (click)
 │       ├── checker.py         # Orquesta la validación de fuentes
 │       ├── deployer.py        # Orquesta el despliegue a la API

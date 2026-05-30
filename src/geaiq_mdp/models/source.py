@@ -1,4 +1,4 @@
-from itertools import product
+﻿from itertools import product
 from pydantic import BaseModel, HttpUrl
 from typing import TYPE_CHECKING, ClassVar
 from typing import List, Iterator, Any, ClassVar, Optional, Union
@@ -6,9 +6,9 @@ from typing import List, Iterator, Any, ClassVar, Optional, Union
 from slugify import slugify
 import pandas as pd
 
-from geoecon_metadata.models.dimension import Dimension
-from geoecon_metadata.models.utils import ColumnRef, isref, unref
-from geoecon_metadata.enums import (
+from geaiq_mdp.models.dimension import Dimension
+from geaiq_mdp.models.utils import ColumnRef, isref, unref
+from geaiq_mdp.enums import (
     ColumnStatus,
     Encodings,
     MeasurementUnit,

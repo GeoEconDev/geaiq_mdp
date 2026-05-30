@@ -1,10 +1,10 @@
-# geaiq_mdp — Context (briefing del proyecto)
+﻿# geaiq_mdp — Context (briefing del proyecto)
 
 > Briefing para agentes de IA y devs. Generado 27 May 2026 releyendo README/DESIGN/AGENTS/BACKLOG/CHANGELOG + código. Mantener actualizado al cambiar stack/arquitectura.
 
 ## Qué es
 
-CLI **`giqmd`** (paquete Python `geoecon_metadata`) que **valida y despliega metadatos geoeconómicos** a la API de GeaIQ + warehouse (BigQuery / PostgreSQL). Es el **puente** entre los analistas (que escriben YAML en el repo de datos `geaiq_metadata`) y la API/warehouse de GeaIQ.
+CLI **`giqmd`** (paquete Python `geaiq_mdp`) que **valida y despliega metadatos geoeconómicos** a la API de GeaIQ + warehouse (BigQuery / PostgreSQL). Es el **puente** entre los analistas (que escriben YAML en el repo de datos `geaiq_metadata`) y la API/warehouse de GeaIQ.
 
 **No es** una app web ni un servicio: es un pipeline de procesamiento que corre local o como **Cloud Run Job**.
 
@@ -23,7 +23,7 @@ metadata/*.yml  →  parse (PersistentAnchorYAML + Pydantic v2)
 - **GCP**: google-cloud-bigquery, google-cloud-storage, google-api-python-client (Drive), pandas-gbq, gspread, geopandas.
 - **Deploy**: Dockerfile (python:3.11-slim) → Artifact Registry → **Cloud Run Job** `metadata` (proyecto `geoecon-dev`, us-central1). CI en `cloudbuild.yaml`.
 
-## Archivos críticos (`src/geoecon_metadata/`)
+## Archivos críticos (`src/geaiq_mdp/`)
 
 | Archivo | Rol | Doc |
 |---|---|---|

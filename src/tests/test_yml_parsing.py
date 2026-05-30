@@ -1,4 +1,4 @@
-from typing import List, Literal, Annotated, ClassVar, Any, Type
+﻿from typing import List, Literal, Annotated, ClassVar, Any, Type
 from pydantic import (
     BaseModel,
     TypeAdapter,
@@ -8,7 +8,7 @@ from pydantic import (
     model_validator,
 )
 
-from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 
 class ObservableScale(BaseModel):
     yaml_tag: ClassVar = f"!ObservableScale"

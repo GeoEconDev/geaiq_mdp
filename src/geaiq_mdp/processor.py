@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from itertools import product
 from typing import TYPE_CHECKING
 import logging
@@ -11,9 +11,9 @@ import geopandas as gpd
 from shapely import wkt
 from functools import reduce
 
-from geoecon_metadata.models.source import Point
-from geoecon_metadata.models.wh import ObservableClass
-from geoecon_metadata.process_logger import ProcessLogger
+from geaiq_mdp.models.source import Point
+from geaiq_mdp.models.wh import ObservableClass
+from geaiq_mdp.process_logger import ProcessLogger
 
 from .models import ObservableGroup, ObservableScale, Dimension, Period
 from .models.utils import isref, resolve_unrefs_uuid, resolve_uuids, unref
@@ -36,7 +36,7 @@ from .enums import (
     ObservableWithoutObservationActions,
 )
 from .report import Reportable, dump_df
-from geoecon_metadata.geoecon_api import GeometryUploadingError
+from geaiq_mdp.geoecon_api import GeometryUploadingError
 from .utils import (
     compare_dicts,
     es_legible_unicode,

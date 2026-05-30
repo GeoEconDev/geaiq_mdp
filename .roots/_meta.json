@@ -1,4 +1,4 @@
-{
+﻿{
   "seed_version": "1.5",
   "created_at": "2026-05-27T00:00:00-03:00",
   "updated_at": "2026-05-27T00:00:00-03:00",
@@ -10,7 +10,7 @@
     "pydantic-models",
     "report-engine"
   ],
-  "description": "CLI `giqmd` (paquete geoecon_metadata): valida y despliega metadatos geoeconómicos (YAML del repo geaiq_metadata) a la API de GeaIQ + warehouse (BigQuery/PostgreSQL). Pipeline parse→check→deploy→report. Corre local o como Cloud Run Job. Stack: Python 3.11, Pydantic v2, Click, ruamel.yaml (anclas persistentes), GCP (BigQuery/Drive/GCS). Split del repo metadata el 22 May 2026 (code aquí, datos en geaiq_metadata).",
+  "description": "CLI `giqmd` (paquete geaiq_mdp): valida y despliega metadatos geoeconómicos (YAML del repo geaiq_metadata) a la API de GeaIQ + warehouse (BigQuery/PostgreSQL). Pipeline parse→check→deploy→report. Corre local o como Cloud Run Job. Stack: Python 3.11, Pydantic v2, Click, ruamel.yaml (anclas persistentes), GCP (BigQuery/Drive/GCS). Split del repo metadata el 22 May 2026 (code aquí, datos en geaiq_metadata).",
   "structure": {
     "context.md": "Briefing del proyecto",
     "roots_seed.md": "Copia local del seed v1.5",

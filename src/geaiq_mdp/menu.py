@@ -1,4 +1,4 @@
-from collections import defaultdict
+﻿from collections import defaultdict
 import os
 import html
 from pathlib import Path
@@ -6,13 +6,13 @@ import requests
 import uuid
 import logging
 
-from geoecon_metadata.cache import cache
-from geoecon_metadata.processors import get_processor
-from geoecon_metadata.data import load_data
-from geoecon_metadata.enums import SourceStatus
-from geoecon_metadata.io_sources import iter_sources
-from geoecon_metadata.parsers import parse_menu, parse_metadata
-from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.cache import cache
+from geaiq_mdp.processors import get_processor
+from geaiq_mdp.data import load_data
+from geaiq_mdp.enums import SourceStatus
+from geaiq_mdp.io_sources import iter_sources
+from geaiq_mdp.parsers import parse_menu, parse_metadata
+from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 
 geoecon_api_url = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com").rstrip("/") + "/api/v1"
 instances_url = f"{geoecon_api_url}/ui/instances/"

@@ -1,8 +1,8 @@
-from ruamel.yaml.representer import RepresenterError
+﻿from ruamel.yaml.representer import RepresenterError
 from slugify import slugify
 from pathlib import Path
-from geoecon_metadata.models import Source, Column, Dimension, ColumnRef
-from geoecon_metadata.readers import dump
+from geaiq_mdp.models import Source, Column, Dimension, ColumnRef
+from geaiq_mdp.readers import dump
 
 SOURCES_FIELD_MAP = {
     "active": None,

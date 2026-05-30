@@ -1,10 +1,10 @@
-import logging
+﻿import logging
 from pathlib import Path
-from geoecon_metadata.data import load_data
-from geoecon_metadata.io_sources import iter_sources
-from geoecon_metadata.processors import get_processor
-from geoecon_metadata.enums import Environments, SourceStatus
-from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.data import load_data
+from geaiq_mdp.io_sources import iter_sources
+from geaiq_mdp.processors import get_processor
+from geaiq_mdp.enums import Environments, SourceStatus
+from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 
 
 def deployer(file_iter, target: Environments, only_new=True, root=None):

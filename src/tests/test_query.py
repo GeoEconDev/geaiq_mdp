@@ -1,4 +1,4 @@
-from geoecon_metadata.gcp import setup_bq
+﻿from geaiq_mdp.gcp import setup_bq
 
 def test_query():
     bq_client = setup_bq()

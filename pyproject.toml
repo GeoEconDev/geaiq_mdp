@@ -1,5 +1,5 @@
-[project]
-name = "geoecon_metadata"
+﻿[project]
+name = "geaiq_mdp"
 version = "0.0.1"
 authors = [
   { name="Cristian S. Rocha", email="csrocha@gmail.com" },
@@ -40,10 +40,10 @@ where = ["src/"]
 exclude = ["tests*", "sql*"]
 
 [project.scripts]
-md-check-all = "geoecon_metadata.check:check_all"
-md-check-files = "geoecon_metadata.check:check_files"
-md-check-commit = "geoecon_metadata.check:check_commit"
-giqmd = "geoecon_metadata.giqmd:cli"
+md-check-all = "geaiq_mdp.check:check_all"
+md-check-files = "geaiq_mdp.check:check_files"
+md-check-commit = "geaiq_mdp.check:check_commit"
+giqmd = "geaiq_mdp.giqmd:cli"
 
 [project.urls]
 Homepage = "https://github.com/GeoEconDev/metadata"

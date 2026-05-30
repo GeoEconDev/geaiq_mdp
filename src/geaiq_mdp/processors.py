@@ -1,13 +1,13 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from geoecon_metadata.enums import SourcePlatform, SourceType
-from geoecon_metadata.bigquery import BigQuerySourceProcessor
-from geoecon_metadata.shape import ShapeProcessor
-from geoecon_metadata.todo import source_type_todo_error
+from geaiq_mdp.enums import SourcePlatform, SourceType
+from geaiq_mdp.bigquery import BigQuerySourceProcessor
+from geaiq_mdp.shape import ShapeProcessor
+from geaiq_mdp.todo import source_type_todo_error
 
 if TYPE_CHECKING:
-    from geoecon_metadata.models import Source
+    from geaiq_mdp.models import Source
 
 
 class PostgreSQLSourceProcessor:

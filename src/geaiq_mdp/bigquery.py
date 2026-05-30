@@ -1,8 +1,8 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from typing import TYPE_CHECKING
 from google.auth import default
 from google.api_core.exceptions import Forbidden, NotFound, BadRequest
-from geoecon_metadata.enums import Encodings
+from geaiq_mdp.enums import Encodings
 from .gcp import setup_bq
 import pandas_gbq as pdgbq
 from time import time

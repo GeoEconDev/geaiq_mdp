@@ -5,7 +5,7 @@
             "name": "Check One File (Dev)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -26,7 +26,7 @@
             "name": "Deploy One File (Dev)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -46,7 +46,7 @@
             "name": "Check menu (upload)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--upload-output",
@@ -68,7 +68,7 @@
             "name": "Tags check (dev)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--upload-output",
@@ -89,7 +89,7 @@
             "name": "Tags upload (dev)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--upload-output",
@@ -117,7 +117,7 @@
             "name": "Check All",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--ctx",
@@ -132,7 +132,7 @@
             "name": "Init (Local)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -148,7 +148,7 @@
             "name": "Init (Dev)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -164,7 +164,7 @@
             "name": "Reset",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "reset",
@@ -176,7 +176,7 @@
             "name": "Check Commit",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--ctx",
@@ -191,7 +191,7 @@
             "name": "Check One File (Local)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -208,7 +208,7 @@
             "name": "Check One File (No Cache)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--invalid-cache",
@@ -225,7 +225,7 @@
             "name": "Deploy One File (Prod)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -243,7 +243,7 @@
             "name": "Deploy One File (Local)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--debug",
@@ -263,7 +263,7 @@
             "name": "Check menu (no upload)",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "menu",
@@ -280,7 +280,7 @@
             "name": "Import",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "import"
@@ -291,7 +291,7 @@
             "name": "Simplify",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "simplify"
@@ -302,7 +302,7 @@
             "name": "Test parsing",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/models.py",
+            "program": "src/geaiq_mdp/models.py",
             "console": "integratedTerminal",
             "args": [],
             "env": {},
@@ -312,13 +312,13 @@
             "name": "Test docker",
             "type": "debugpy",
             "request": "launch",
-            "program": "src/geoecon_metadata/giqmd.py",
+            "program": "src/geaiq_mdp/giqmd.py",
             "console": "integratedTerminal",
             "args": [
                 "--context",
                 "docker",
                 "--root",
-                "$TMP\\geoecon_metadata",
+                "$TMP\\geaiq_mdp",
                 "--target",
                 "dev",
                 "--commit",

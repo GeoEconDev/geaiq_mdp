@@ -1,4 +1,4 @@
-# Módulos internos de Python
+﻿# Módulos internos de Python
 from datetime import datetime, timezone
 import logging
 import os
@@ -8,13 +8,13 @@ from io import StringIO
 from pathlib import Path
 from time import time
 
-from geoecon_metadata.utils import url_to_logs
-from geoecon_metadata.version import get_version_string
-from geoecon_metadata.cache import CACHE_PATH
-from geoecon_metadata.google_chat import GoogleChatBot
-from geoecon_metadata.io_sources import docker_md_yaml, iter_sources
-from geoecon_metadata.process_logger import LOG_PATH
-from geoecon_metadata.shape import SHAPE_PATH
+from geaiq_mdp.utils import url_to_logs
+from geaiq_mdp.version import get_version_string
+from geaiq_mdp.cache import CACHE_PATH
+from geaiq_mdp.google_chat import GoogleChatBot
+from geaiq_mdp.io_sources import docker_md_yaml, iter_sources
+from geaiq_mdp.process_logger import LOG_PATH
+from geaiq_mdp.shape import SHAPE_PATH
 
 try:
     # Paquetes de terceros
@@ -25,24 +25,24 @@ try:
     from pydantic import ValidationError
 
     # Módulos propios
-    from geoecon_metadata.cache import invalidate_cache, unlink_cache, cache
-    from geoecon_metadata.checker import checker
-    from geoecon_metadata.data import load_data
-    from geoecon_metadata.deployer import deployer
-    from geoecon_metadata.drive import upload_to_drive
-    from geoecon_metadata.gcp import setup_ss
-    from geoecon_metadata.geoecon_api import GEOECON_API_MAP, GeoEconAPI
-    from geoecon_metadata.io_sources import (
+    from geaiq_mdp.cache import invalidate_cache, unlink_cache, cache
+    from geaiq_mdp.checker import checker
+    from geaiq_mdp.data import load_data
+    from geaiq_mdp.deployer import deployer
+    from geaiq_mdp.drive import upload_to_drive
+    from geaiq_mdp.gcp import setup_ss
+    from geaiq_mdp.geoecon_api import GEOECON_API_MAP, GeoEconAPI
+    from geaiq_mdp.io_sources import (
         all_md_yaml,
         input_md_yaml,
         commit_md_yaml,
         is_md_yaml,
     )
-    from geoecon_metadata.menu import Menu
-    from geoecon_metadata.models.geoecon_api import GeoEconAPIModel
-    from geoecon_metadata.parsers import parse_menu, parse_metadata
-    from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
-    from geoecon_metadata.report import (
+    from geaiq_mdp.menu import Menu
+    from geaiq_mdp.models.geoecon_api import GeoEconAPIModel
+    from geaiq_mdp.parsers import parse_menu, parse_metadata
+    from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
+    from geaiq_mdp.report import (
         head_plain,
         foot_plain,
         head_markdown,
@@ -59,7 +59,7 @@ try:
         format_resume_json,
         get_types,
     )
-    from geoecon_metadata.spreadsheet import md_import
+    from geaiq_mdp.spreadsheet import md_import
 except ModuleNotFoundError as exc:
     print(
         "Módulo no encontrado. Intentando instalarlo con 'pip install -r requirements.txt'"

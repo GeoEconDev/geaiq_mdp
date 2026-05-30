@@ -1,5 +1,5 @@
-from typing import List, Any
-from geoecon_metadata.models import (
+﻿from typing import List, Any
+from geaiq_mdp.models import (
     ObservableGroup,
     ObservableScale,
     Period,

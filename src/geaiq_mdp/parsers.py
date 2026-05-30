@@ -1,8 +1,8 @@
-from functools import cache
+﻿from functools import cache
 from pathlib import Path
 from typing import List
 from pydantic import TypeAdapter
-from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 import logging
 from .models import (
     IncludeOptions,

@@ -1,11 +1,11 @@
-from pathlib import Path
+﻿from pathlib import Path
 import pandas as pd
 from pydantic import BaseModel
 from typing import ClassVar
 from ruamel.yaml.nodes import ScalarNode
 from ruamel.yaml.constructor import ConstructorError
 
-from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 
 
 class ColumnRef(BaseModel):
@@ -37,7 +37,7 @@ class IncludeOptions(BaseModel):
 
     @classmethod
     def from_yaml(cls, constructor, node):
-        from geoecon_metadata.parsers import parse_menu
+        from geaiq_mdp.parsers import parse_menu
 
         if isinstance(node, ScalarNode):
             files = node.value.split(" ")

@@ -6,6 +6,19 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-05-30 — v0.1.0a8: Renombrado del paquete a `geaiq_mdp`
+
+**Resumen:** El paquete Python se llamaba `geoecon_metadata` (nombre de distribución e importación). Se renombra a `geaiq_mdp` para que coincida con el nombre del repositorio. Se actualizan todos los imports internos, `pyproject.toml`, Dockerfile, Makefile, tests y documentación.
+
+### Cambios
+
+- **`src/geoecon_metadata/`** → **`src/geaiq_mdp/`**: directorio renombrado.
+- **`pyproject.toml`**: `name = "geaiq_mdp"`, entry points actualizados (`geaiq_mdp.giqmd:cli`).
+- Todos los `from geoecon_metadata import` / `import geoecon_metadata` reemplazados por `geaiq_mdp` en 34 archivos.
+- **`version.py`**: Serial incrementado a `8` → versión `0.1.0a8`.
+
+---
+
 ## 2026-05-30 — v0.1.0a7: `GeoEconAPIProd` también lee `GEAIQ_API_URL`
 
 **Resumen:** `GeoEconAPIProd` tenía hardcodeada `https://api.geoecon.info/`. Como ahora hay un único servidor (`https://api.geaiq.com`) que atiende todos los ambientes, tanto DEV como PROD leen `GEAIQ_API_URL` con el mismo fallback. El flag `--target` controla el ambiente de datos dentro de la API, no el servidor.

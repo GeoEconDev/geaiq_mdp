@@ -16,10 +16,10 @@ No es una aplicación web ni un servicio. Es un pipeline de procesamiento de dat
 
 | Punto de entrada | Descripción |
 |---|---|
-| `src/geoecon_metadata/giqmd.py` | CLI principal (Click). Toda funcionalidad pública parte de aquí. |
-| `src/geoecon_metadata/checker.py` | `checker()` — valida fuentes READY |
-| `src/geoecon_metadata/deployer.py` | `deployer()` — despliega fuentes VALID |
-| `src/geoecon_metadata/data.py` | `load_data()` — **debe llamarse primero** para cargar anclas YAML globales |
+| `src/geaiq_mdp/giqmd.py` | CLI principal (Click). Toda funcionalidad pública parte de aquí. |
+| `src/geaiq_mdp/checker.py` | `checker()` — valida fuentes READY |
+| `src/geaiq_mdp/deployer.py` | `deployer()` — despliega fuentes VALID |
+| `src/geaiq_mdp/data.py` | `load_data()` — **debe llamarse primero** para cargar anclas YAML globales |
 
 ## Flujo de datos (simplificado)
 
@@ -35,7 +35,7 @@ load_data(root, reader)          # carga data/ en el PersistentAnchorYAML
 
 ## Modelos de datos
 
-Los modelos Pydantic están en `src/geoecon_metadata/models/`:
+Los modelos Pydantic están en `src/geaiq_mdp/models/`:
 
 - `Source` (`models/source.py`) — modelo central. Representa un dataset completo.
 - `Column` — columna de datos con dimensiones, período y unidad.
@@ -48,7 +48,7 @@ Los modelos usan Pydantic v2. Los validadores de campos usan `@field_validator`,
 
 ## Enums relevantes
 
-En `src/geoecon_metadata/enums.py`:
+En `src/geaiq_mdp/enums.py`:
 
 - `SourceStatus` — `draft | ready | valid | deployed | done | error | failed`
 - `SourceType` — `query | shape | TODO`
@@ -108,9 +108,9 @@ Los tests son principalmente de integración y requieren credenciales GCP activa
 ## Qué NO tocar sin coordinación del equipo
 
 - `data/00_scales.yaml` — cambiar o renombrar anclas rompe todos los archivos de metadatos que las referencien.
-- `src/geoecon_metadata/models/source.py` — cambios en campos de `Source` o `Column` invalidan el caché pickle existente.
-- `src/geoecon_metadata/persistent_anchor_yaml.py` — el parser de YAML personalizado es frágil; cualquier cambio debe ir acompañado de tests.
-- `src/geoecon_metadata/geoecon_api.py` — contratos con la API externa.
+- `src/geaiq_mdp/models/source.py` — cambios en campos de `Source` o `Column` invalidan el caché pickle existente.
+- `src/geaiq_mdp/persistent_anchor_yaml.py` — el parser de YAML personalizado es frágil; cualquier cambio debe ir acompañado de tests.
+- `src/geaiq_mdp/geoecon_api.py` — contratos con la API externa.
 
 ## Patrones comunes que confunden
 

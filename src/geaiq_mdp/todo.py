@@ -1,4 +1,4 @@
-from geoecon_metadata.enums import SourceType
+﻿from geaiq_mdp.enums import SourceType
 
 
 def source_type_todo_error(source, *_args, **_kwargs):

@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import json
 import ssl
 from typing import TYPE_CHECKING
@@ -10,17 +10,17 @@ import logging
 from googleapiclient.http import MediaIoBaseDownload
 from googleapiclient.errors import HttpError
 import numpy as np
-from geoecon_metadata.enums import Encodings, Environments
-from geoecon_metadata.geoecon_api import GeoEconAPIError
-from geoecon_metadata.models.geoecon_api import GeoEconAPIMultipleItems
-from geoecon_metadata.models.utils import isref
-from geoecon_metadata.processor import EncodingError, Processor, cache, ProcessorError
-from geoecon_metadata.gcp import setup_drive
-from geoecon_metadata.models import ColumnRef
+from geaiq_mdp.enums import Encodings, Environments
+from geaiq_mdp.geoecon_api import GeoEconAPIError
+from geaiq_mdp.models.geoecon_api import GeoEconAPIMultipleItems
+from geaiq_mdp.models.utils import isref
+from geaiq_mdp.processor import EncodingError, Processor, cache, ProcessorError
+from geaiq_mdp.gcp import setup_drive
+from geaiq_mdp.models import ColumnRef
 import zipfile
 import geopandas as gpd
 
-from geoecon_metadata.utils import es_legible_unicode
+from geaiq_mdp.utils import es_legible_unicode
 
 
 if TYPE_CHECKING:

@@ -14,7 +14,7 @@ Criterio de priorización:
 
 ### BUG-01 · `dump_metadata` está roto y nunca puede ejecutarse
 
-**Archivo**: [src/geoecon_metadata/parsers.py](src/geoecon_metadata/parsers.py)
+**Archivo**: [src/geaiq_mdp/parsers.py](src/geaiq_mdp/parsers.py)
 
 **Problema**: La función referencia `reader` y `filename` como si fueran parámetros, pero ninguno está en su firma. Es un copy-paste incompleto de `parse_menu`. Cualquier llamada lanzaría `NameError`.
 
@@ -28,7 +28,7 @@ Criterio de priorización:
 
 ### BUG-02 · `report[-1]` en `checker.py` asume estado previo implícito
 
-**Archivo**: [src/geoecon_metadata/checker.py:24](src/geoecon_metadata/checker.py)
+**Archivo**: [src/geaiq_mdp/checker.py:24](src/geaiq_mdp/checker.py)
 
 **Problema**: `report[-1]["sources"].append(...)` asume que `iter_sources` ya insertó un elemento en `report` antes de ejecutar el cuerpo del loop. Si `iter_sources` no produce ningún elemento pero agrega algo a `report` de forma tardía, o si la lógica cambia, esto produce `IndexError`. La invariante es invisible desde el código del checker.
 
@@ -40,7 +40,7 @@ Criterio de priorización:
 
 ### BUG-03 · `pip install` interno en `giqmd.py`
 
-**Archivo**: [src/geoecon_metadata/giqmd.py:63-74](src/geoecon_metadata/giqmd.py)
+**Archivo**: [src/geaiq_mdp/giqmd.py:63-74](src/geaiq_mdp/giqmd.py)
 
 **Problema**: El bloque `except ModuleNotFoundError` invoca los internals de pip para auto-instalarse. Esto es frágil (el API interno de pip no es estable), silencia el error real, y puede instalar versiones incorrectas en entornos controlados (virtualenv, Docker). En producción ya hay un `Dockerfile` que garantiza las dependencias — este código nunca debería ejecutarse en ese contexto.
 
@@ -57,7 +57,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-01 · Caché sin versionado: falla silenciosa tras cambios de modelo
 
-**Archivo**: [src/geoecon_metadata/cache.py](src/geoecon_metadata/cache.py)
+**Archivo**: [src/geaiq_mdp/cache.py](src/geaiq_mdp/cache.py)
 
 **Problema**: El caché usa pickle keyed por slug. Si cambia la estructura de un modelo Pydantic (`Source`, `Column`, etc.), el unpickle falla con un error críptico (`AttributeError` o `TypeError`) que el usuario no asocia con el caché. El `--clean-full-cache` existe pero requiere que el usuario sepa que debe usarlo.
 
@@ -71,7 +71,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-02 · Ambigüedad entre `status: deployed` y `status: done`
 
-**Archivo**: [src/geoecon_metadata/enums.py](src/geoecon_metadata/enums.py), modelos y archivos `metadata/`
+**Archivo**: [src/geaiq_mdp/enums.py](src/geaiq_mdp/enums.py), modelos y archivos `metadata/`
 
 **Problema**: Ambos valores existen en `SourceStatus` pero no hay documentación ni validación que explique cuándo usar uno u otro. Los archivos de metadatos usan ambos de forma inconsistente. Esto puede afectar filtros en el pipeline si alguna condición solo chequea uno de los dos.
 
@@ -96,7 +96,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-04 · `update_period` no implementado en el cliente API
 
-**Archivo**: [src/geoecon_metadata/geoecon_api.py](src/geoecon_metadata/geoecon_api.py)
+**Archivo**: [src/geaiq_mdp/geoecon_api.py](src/geaiq_mdp/geoecon_api.py)
 
 **Problema**: El método existe pero lanza `NotImplementedError` (o equivalente). Si `giqmd init --update` intenta actualizar períodos, falla en runtime sin que el usuario tenga forma de saberlo de antemano.
 
@@ -110,7 +110,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-05 · Campo `typo` confunde a cualquier lector nuevo
 
-**Archivos**: [src/geoecon_metadata/models/dimension.py](src/geoecon_metadata/models/dimension.py), archivos `data/*.yaml`
+**Archivos**: [src/geaiq_mdp/models/dimension.py](src/geaiq_mdp/models/dimension.py), archivos `data/*.yaml`
 
 **Problema**: `typo: abstract` parece un error tipográfico de `type`. El nombre viene de una convención interna pero no está documentado en ningún lugar. Dificulta onboarding y confunde a agentes de IA y linters.
 
@@ -137,7 +137,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-07 · Mezcla de idiomas en mensajes al usuario y logs
 
-**Archivos**: múltiples, principalmente [src/geoecon_metadata/giqmd.py](src/geoecon_metadata/giqmd.py), `checker.py`, `deployer.py`
+**Archivos**: múltiples, principalmente [src/geaiq_mdp/giqmd.py](src/geaiq_mdp/giqmd.py), `checker.py`, `deployer.py`
 
 **Problema**: Los mensajes alternan español e inglés sin criterio. Dificulta hacer `grep` de errores en logs de producción y confunde a colaboradores que solo hablan uno de los dos idiomas.
 
@@ -163,7 +163,7 @@ ModuleNotFoundError: instalar dependencias con 'pip install -e .' antes de usar 
 
 ### TECH-09 · `from functools import cache` importado sin usar
 
-**Archivo**: [src/geoecon_metadata/parsers.py:1](src/geoecon_metadata/parsers.py)
+**Archivo**: [src/geaiq_mdp/parsers.py:1](src/geaiq_mdp/parsers.py)
 
 **Acción**: Eliminar el import.
 

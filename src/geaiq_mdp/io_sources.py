@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 import yaml
 import git
@@ -208,7 +208,7 @@ def docker_md_yaml(root: Path, commit: str | None):
     REPO_URL = os.getenv(
         "METADATA_GIT_REPO", "https://api.github.com/repos/GeoEconDev/metadata"
     )
-    TARGET_DIR = root or Path(os.getenv("METADATA_DIR", "/tmp/geoecon_metadata"))
+    TARGET_DIR = root or Path(os.getenv("METADATA_DIR", "/tmp/geaiq_mdp"))
     TOKEN = os.getenv("GIT_TOKEN", None)
 
     errors = []

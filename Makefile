@@ -1,4 +1,4 @@
-SHELL := /usr/bin/bash
+﻿SHELL := /usr/bin/bash
 .PHONY: sync-from-develop sync-develop sync clean clean-cache clean-reports clean-logs show-status upload-statics
 
 
@@ -33,7 +33,7 @@ show-status:
 
 
 upload-statics:
-	gsutil -m cp -r src/geoecon_metadata/statics/* gs://geoecon-dev-static/
+	gsutil -m cp -r src/geaiq_mdp/statics/* gs://geoecon-dev-static/
 
 
 ifdef file
