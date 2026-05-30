@@ -1,4 +1,4 @@
-VERSION = {"major": 0, "minor": 1, "micro": 0, "releaselevel": "alpha", "serial": 6}
+VERSION = {"major": 0, "minor": 1, "micro": 0, "releaselevel": "alpha", "serial": 7}
 
 
 def get_version_string():

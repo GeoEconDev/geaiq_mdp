@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-05-30 — v0.1.0a7: `GeoEconAPIProd` también lee `GEAIQ_API_URL`
+
+**Resumen:** `GeoEconAPIProd` tenía hardcodeada `https://api.geoecon.info/`. Como ahora hay un único servidor (`https://api.geaiq.com`) que atiende todos los ambientes, tanto DEV como PROD leen `GEAIQ_API_URL` con el mismo fallback. El flag `--target` controla el ambiente de datos dentro de la API, no el servidor.
+
+### Cambios
+
+- **`geoecon_api.py`**: `GeoEconAPIProd.static_uri` ahora lee `GEAIQ_API_URL` igual que `GeoEconAPIDev`.
+- **`version.py`**: Serial incrementado a `7` → versión `0.1.0a7`.
+
+---
+
 ## 2026-05-30 — v0.1.0a6: URL de API configurable via `GEAIQ_API_URL`
 
 **Resumen:** La URL de la GeaIQ API estaba hardcodeada apuntando a la instancia antigua de Google Cloud Run (`geoecon-api-dev-...us-central1.run.app`), que ya no está disponible. Se migra `GeoEconAPIDev` y `menu.py` para leer la URL desde la variable de entorno `GEAIQ_API_URL`, con fallback a `https://api.geaiq.com`.
