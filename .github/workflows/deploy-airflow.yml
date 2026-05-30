@@ -11,7 +11,7 @@ jobs:
       - name: Trigger Airflow update in geaiq-data-stack
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_PAT }}
+          token: ${{ secrets.STACK_DISPATCH_TOKEN }}
           repository: GeoEconDev/geaiq-data-stack
           event-type: geaiq_mdp_updated
           client-payload: '{"sha": "${{ github.sha }}"}'
