@@ -1,19 +1,17 @@
-name: Deploy to Airflow
+name: Notify geaiq-data-stack
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Reinstall geaiq_mdp on Airflow scheduler
-        uses: appleboy/ssh-action@v1
+      - name: Trigger Airflow update in geaiq-data-stack
+        uses: peter-evans/repository-dispatch@v3
         with:
-          host: geaiq.com
-          username: deploy
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            docker exec airflow-scheduler python -m pip install --force-reinstall --no-deps \
-              "git+https://github.com/GeoEconDev/geaiq_mdp.git@${{ github.sha }}"
+          token: ${{ secrets.GITHUB_PAT }}
+          repository: GeoEconDev/geaiq-data-stack
+          event-type: geaiq_mdp_updated
+          client-payload: '{"sha": "${{ github.sha }}"}'
