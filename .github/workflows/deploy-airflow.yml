@@ -1,0 +1,19 @@
+name: Deploy to Airflow
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reinstall geaiq_mdp on Airflow scheduler
+        uses: appleboy/ssh-action@v1
+        with:
+          host: geaiq.com
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            docker exec airflow-scheduler python -m pip install --force-reinstall --no-deps \
+              "git+https://github.com/GeoEconDev/geaiq_mdp.git@${{ github.sha }}"
