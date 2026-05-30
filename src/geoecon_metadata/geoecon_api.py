@@ -676,7 +676,7 @@ class GeoEconAPI:
             return None
 
 class GeoEconAPIDev(GeoEconAPI):
-    static_uri = "https://geoecon-api-dev-699125245692.us-central1.run.app/"
+    static_uri = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
     api_uri = static_uri + "api/v1/"
 
 

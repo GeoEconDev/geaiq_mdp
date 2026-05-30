@@ -14,7 +14,7 @@ from geoecon_metadata.io_sources import iter_sources
 from geoecon_metadata.parsers import parse_menu, parse_metadata
 from geoecon_metadata.persistent_anchor_yaml import PersistentAnchorYAML
 
-geoecon_api_url = "https://geoecon-api-dev-699125245692.us-central1.run.app/api/v1"
+geoecon_api_url = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com").rstrip("/") + "/api/v1"
 instances_url = f"{geoecon_api_url}/ui/instances/"
 
 

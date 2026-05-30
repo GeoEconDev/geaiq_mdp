@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-05-30 — v0.1.0a6: URL de API configurable via `GEAIQ_API_URL`
+
+**Resumen:** La URL de la GeaIQ API estaba hardcodeada apuntando a la instancia antigua de Google Cloud Run (`geoecon-api-dev-...us-central1.run.app`), que ya no está disponible. Se migra `GeoEconAPIDev` y `menu.py` para leer la URL desde la variable de entorno `GEAIQ_API_URL`, con fallback a `https://api.geaiq.com`.
+
+### Cambios
+
+- **`geoecon_api.py`**: `GeoEconAPIDev.static_uri` ahora se obtiene de `os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/")`.
+- **`menu.py`**: `geoecon_api_url` ahora se obtiene de `os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com")`.
+- **`version.py`**: Serial incrementado a `6` → versión `0.1.0a6`.
+
+---
+
 ## 2026-05-22 — Se agrega CHANGELOG
 
 **Prompt:**
