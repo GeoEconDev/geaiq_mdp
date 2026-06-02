@@ -82,6 +82,23 @@ class GeoEconAPI:
         )
         self.session.headers.update({'User-Agent': os.getenv('USER_AGENT', 'Metadata Processor')})
 
+        token = os.getenv('GEAIQ_API_TOKEN')
+        if not token:
+            user = os.getenv('GEAIQ_API_USER')
+            password = os.getenv('GEAIQ_API_PASSWORD')
+            if user and password:
+                token = self._login(user, password)
+        if token:
+            self.session.headers.update({'Authorization': f'Bearer {token}'})
+
+    def _login(self, username: str, password: str) -> str:
+        resp = self.session.post(
+            urljoin(self.api_uri, 'auth/token'),
+            data={'username': username, 'password': password},
+        )
+        resp.raise_for_status()
+        return resp.json()['access_token']
+
     def list(self, endpoint, *args, **kwargs):
         page = 1
         last_page = 2

@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-02 — v0.1.0a10: Autenticación Bearer en `GeoEconAPI`
+
+**Resumen:** El cliente `GeoEconAPI` no enviaba credenciales al hacer requests, causando errores 403 "Not authenticated" en endpoints protegidos (como `POST /r/{step}/{status}` para subir reportes). Se agrega soporte de autenticación vía variable de entorno.
+
+### Cambios
+
+- **`geoecon_api.py`**: `GeoEconAPI.__init__` ahora configura `Authorization: Bearer` en la sesión. Lee `GEAIQ_API_TOKEN` directamente si está disponible; de lo contrario, hace login con `GEAIQ_API_USER` + `GEAIQ_API_PASSWORD` contra `POST /auth/token`. Sin credenciales la sesión queda sin auth (comportamiento anterior).
+- **`version.py`**: serial incrementado a `10` → versión `0.1.0a10`.
+
+---
+
 ## 2026-06-02 — v0.1.0a9: Fix UTF-8 BOM en `pyproject.toml`
 
 **Resumen:** `pyproject.toml` tenía un UTF-8 BOM (`EF BB BF`) al inicio del archivo. Esto causaba que `tomllib.loads()` fallara con `TOMLDecodeError: Invalid statement (at line 1, column 1)` al intentar instalar el paquete con pip, bloqueando el deploy automático en Airflow.
