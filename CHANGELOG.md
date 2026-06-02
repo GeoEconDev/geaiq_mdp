@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-02 — v0.1.0a9: Fix UTF-8 BOM en `pyproject.toml`
+
+**Resumen:** `pyproject.toml` tenía un UTF-8 BOM (`EF BB BF`) al inicio del archivo. Esto causaba que `tomllib.loads()` fallara con `TOMLDecodeError: Invalid statement (at line 1, column 1)` al intentar instalar el paquete con pip, bloqueando el deploy automático en Airflow.
+
+### Cambios
+
+- **`pyproject.toml`**: eliminado el UTF-8 BOM; versión sincronizada a `0.1.0a9`.
+- **`version.py`**: serial incrementado a `9` → versión `0.1.0a9`.
+
+---
+
 ## 2026-05-30 — v0.1.0a8: Renombrado del paquete a `geaiq_mdp`
 
 **Resumen:** El paquete Python se llamaba `geoecon_metadata` (nombre de distribución e importación). Se renombra a `geaiq_mdp` para que coincida con el nombre del repositorio. Se actualizan todos los imports internos, `pyproject.toml`, Dockerfile, Makefile, tests y documentación.
