@@ -175,3 +175,6 @@ secrets.env
 geaiq_mdp.code-workspace
 *.zip
 *.html
+# .roots siempre versionado (forest) — no editar a mano
+!.roots/
+!.roots/**
