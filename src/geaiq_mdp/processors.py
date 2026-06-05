@@ -21,6 +21,12 @@ def _detect_backend(platform: SourcePlatform) -> str:
             return "airflow"
         except ImportError:
             return "direct"
+    if platform == SourcePlatform.GOOGLEDRIVE:
+        try:
+            import airflow.providers.google.suite.hooks.drive  # noqa: F401
+            return "airflow"
+        except ImportError:
+            return "gcp"
     return "gcp"
 
 
@@ -46,6 +52,9 @@ def get_processor(source: Source):
         )
 
     if source_type == "shape" and platform == SourcePlatform.GOOGLEDRIVE:
+        if backend == "airflow":
+            from geaiq_mdp.airflow_shape import AirflowShapeProcessor
+            return AirflowShapeProcessor()
         from geaiq_mdp.shape import ShapeProcessor
         return ShapeProcessor()
 

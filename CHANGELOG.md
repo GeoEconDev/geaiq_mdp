@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a12: AirflowShapeProcessor para fuentes Google Drive
+
+**Resumen:** Completa el soporte Airflow para todos los tipos de fuente. `ShapeProcessor` (Google Drive) ahora tiene su adaptador Airflow usando `GoogleDriveHook`.
+
+### Cambios
+
+- **`airflow_shape.py`** (nuevo): `AirflowShapeProcessor` hereda de `ShapeProcessor` y sobreescribe solo `setup()` para obtener el servicio de Drive vía `GoogleDriveHook.get_conn()` en lugar de `setup_drive()`. Toda la lógica de descarga y parseo de shapefiles se reutiliza.
+- **`processors.py`**: `_detect_backend()` detecta `GOOGLEDRIVE` → `airflow` si `airflow.providers.google.suite.hooks.drive` está disponible. `get_processor()` retorna `AirflowShapeProcessor` en ese caso.
+
+---
+
 ## 2026-06-05 — v0.1.0a11: Lazy imports y adaptador Airflow para conectores GCP
 
 **Resumen:** Las dependencias de Google (BigQuery, Drive, Storage, gspread, geopandas, pandas-gbq) causaban conflictos de `cryptography` al instalar `geaiq_mdp` en un entorno Airflow. Se refactorizan los imports a lazy y se introduce un sistema de adaptadores con auto-detección de backend.
