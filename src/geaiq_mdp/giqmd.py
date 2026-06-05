@@ -8,6 +8,7 @@ from io import StringIO
 from pathlib import Path
 from time import time
 
+from geaiq_mdp.enums import ExitCode
 from geaiq_mdp.utils import url_to_logs
 from geaiq_mdp.version import get_version_string
 from geaiq_mdp.cache import CACHE_PATH
@@ -143,8 +144,6 @@ MESSAGE_ERROR_MAP = {
     "warning": "with warnings",
 }
 
-EXIT_MAP = {"info": 0, "ok": 0, "warning": 1, "error": 2}
-
 
 def validate_commit(ctx, param, value):
     """Valida que el valor sea un hash de commit o una referencia válida"""
@@ -258,7 +257,7 @@ def cli(
 
 
 def worst_report_type(report):
-    return max(set(get_types(report)) | {"info"}, key=lambda a: EXIT_MAP.get(a))
+    return max(set(get_types(report)) | {"info"}, key=lambda a: ExitCode[a])
 
 
 def chat_bot(f):
@@ -325,7 +324,7 @@ def finalize(
             click.echo("Report not uploaded")
 
         ctx.exit(
-            EXIT_MAP[results] if (results == "error" and context != "docker") else 0
+            ExitCode[results] if (results == "error" and context != "docker") else 0
         )
 
 

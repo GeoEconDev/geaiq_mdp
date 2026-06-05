@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a14: ExitCode enum; EXIT_MAP eliminado de giqmd
+
+**Resumen:** `EXIT_MAP` reemplazado por el enum `ExitCode(int, Enum)` en `enums.py`. Esto permite que el DAG de Airflow importe `ExitCode` desde `geaiq_mdp.enums` (módulo liviano, sin dependencias pesadas) sin arrastrar el import de `gspread` que vivía en `giqmd.py`.
+
+### Cambios
+
+- **`enums.py`**: agrega `ExitCode(int, Enum)` con miembros `info=0`, `ok=0`, `warning=1`, `error=2`.
+- **`giqmd.py`**: elimina definición local de `EXIT_MAP`; importa `ExitCode` desde `enums`; actualiza usos en `worst_report_type()` y `ctx.exit()`.
+
+---
+
 ## 2026-06-05 — v0.1.0a13: Resolución de conexiones Airflow por slug (mdp.{slug})
 
 **Resumen:** Los adaptadores Airflow ahora intentan usar una conexión específica por fuente antes de caer al default de plataforma. La convención es `mdp.{slug}` — si esa conexión existe en Airflow, se usa; si no, se usa `google_cloud_default` o `postgres_default`.

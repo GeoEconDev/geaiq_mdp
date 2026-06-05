@@ -344,6 +344,12 @@ class GroupScaleEnum(str, Enum):
     ABSTRACT_SCALE = "abstract_scale"
 
 
+class ExitCode(int, Enum):
+    info = 0
+    ok = 0
+    warning = 1
+    error = 2
+
+
 class ShapeOperationEnum(str, Enum):
     DISSOLVE = "dissolve"
-    
