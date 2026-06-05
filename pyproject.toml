@@ -1,6 +1,6 @@
 [project]
 name = "geaiq_mdp"
-version = "0.1.0a14"
+version = "0.1.0a15"
 authors = [
   { name="Cristian S. Rocha", email="csrocha@gmail.com" },
 ]
@@ -43,6 +43,14 @@ airflow = [
     "apache-airflow-providers-google",
     "apache-airflow-providers-postgres",
 ]
+test = [
+    "pytest",
+    "pandas",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["src/tests"]
+pythonpath = ["src"]
 
 [tool.setuptools.packages.find]
 where = ["src/"]

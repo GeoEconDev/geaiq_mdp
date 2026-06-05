@@ -6,6 +6,22 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a15: Migración de tests a pytest
+
+**Resumen:** Los tests del proyecto fueron migrados a pytest. Se agregó configuración de pytest en `pyproject.toml` y en `.vscode/settings.json` para que VS Code los descubra automáticamente.
+
+### Cambios
+
+- **`pyproject.toml`**: agrega dependencia opcional `test = ["pytest", "pandas"]`; agrega sección `[tool.pytest.ini_options]` con `testpaths = ["src/tests"]` y `pythonpath = ["src"]`.
+- **`.vscode/settings.json`** (nuevo): habilita pytest en VS Code apuntando a `src/tests`.
+- **`test_query.py`**: agrega `pytest.mark.skip` (requiere credenciales BigQuery).
+- **`test_report.py`**: elimina `if __name__ == "__main__"` e import comentado.
+- **`test_yml_anchor.py`**: reemplaza la clase duplicada `PersistentAnchorComposer` por import desde el módulo; convierte el script en dos tests con assertions y `pytest.raises`.
+- **`test_yml_data.py`**: corrige bug (reader pasado como root); convierte a tests con fixture `tmp_path`.
+- **`test_yml_parsing.py`**: convierte el script con prints en tests con assertions sobre tipos y valores.
+
+---
+
 ## 2026-06-05 — v0.1.0a14: ExitCode enum; EXIT_MAP eliminado de giqmd
 
 **Resumen:** `EXIT_MAP` reemplazado por el enum `ExitCode(int, Enum)` en `enums.py`. Esto permite que el DAG de Airflow importe `ExitCode` desde `geaiq_mdp.enums` (módulo liviano, sin dependencias pesadas) sin arrastrar el import de `gspread` que vivía en `giqmd.py`.

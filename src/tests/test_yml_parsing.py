@@ -1,39 +1,7 @@
-﻿from typing import List, Literal, Annotated, ClassVar, Any, Type
-from pydantic import (
-    BaseModel,
-    TypeAdapter,
-    field_validator,
-    Field,
-    model_serializer,
-    model_validator,
-)
-
+from ruamel.yaml import YAML
 from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
+from geaiq_mdp.models import ObservableScale, ObservableGroup
 
-class ObservableScale(BaseModel):
-    yaml_tag: ClassVar = f"!ObservableScale"
-
-    name: str
-    description: str
-
-    @classmethod
-    def from_yaml(cls, constructor, node):
-        data = constructor.construct_mapping(node, deep=True)
-        return cls(**data)
-
-    
-class ObservableGroup(BaseModel):
-    yaml_tag: ClassVar = f"!ObservableGroup"
-
-    name: str
-    description: str
-    
-    @classmethod
-    def from_yaml(cls, constructor, node):
-        data = constructor.construct_mapping(node, deep=True)
-        return cls(**data)
-    
-    
 yml_a = """
 - !ObservableScale &aOSA
   name: A
@@ -53,22 +21,28 @@ yml_b = """
 - *aOSA
 """
 
-from ruamel.yaml import YAML
 
-
-def read_data(yaml_file, reader=None):
-    reader = reader or YAML(typ="safe", pure=True)
+def _make_reader():
+    reader = PersistentAnchorYAML(typ="safe", pure=True)
     reader.register_class(ObservableScale)
     reader.register_class(ObservableGroup)
-    objects = reader.load(yaml_file)
-    #ta = TypeAdapter(List[ObservableScale | ObservableGroup])  # type: ignore
-    #return ta.validate_python(objects)
-    return objects
+    return reader
 
 
-reader = PersistentAnchorYAML(typ="safe", pure=True)
-print("...")
-print(read_data(yml_a, reader))
-print(f"A Anchors: {reader.composer.anchors} {reader.composer.anchor_stack}")
-print(read_data(yml_b, reader))
-print(f"B Anchors: {reader.composer.anchors} {reader.composer.anchor_stack}")
+def test_read_yml_returns_correct_types():
+    reader = _make_reader()
+    result = reader.load(yml_a)
+    assert len(result) == 2
+    assert isinstance(result[0], ObservableScale)
+    assert isinstance(result[1], ObservableGroup)
+
+
+def test_read_yml_with_cross_document_anchor():
+    reader = _make_reader()
+    reader.load(yml_a)
+    reader.push_anchors()
+    result = reader.load(yml_b)
+    assert len(result) == 3
+    assert isinstance(result[2], ObservableScale)
+    assert result[2].name == "A"
+    assert result[2].description == "B"
