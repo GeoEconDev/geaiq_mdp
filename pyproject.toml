@@ -1,6 +1,6 @@
 [project]
 name = "geaiq_mdp"
-version = "0.1.0a10"
+version = "0.1.0a11"
 authors = [
   { name="Cristian S. Rocha", email="csrocha@gmail.com" },
 ]
@@ -13,7 +13,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "ruamel.yaml==0.18.6", 
+    "ruamel.yaml==0.18.6",
     "ruamel.yaml.clib==0.2.8",
     "pyyaml",
     "GitPython",
@@ -21,18 +21,27 @@ dependencies = [
     "pydantic",
     "pydantic_yaml",
     "python-slugify",
-    "geopandas",
-    "pandas-gbq",
-    "google-api-python-client",
-    "google-cloud-bigquery",
-    "google-cloud-storage",
-    "gspread",
     "tabulate",
     "markdown",
     "chardet",
     "emoji",
     "python-markdown-math",
     "matplotlib==3.10.1"
+]
+
+[project.optional-dependencies]
+gcp = [
+    "geopandas",
+    "pandas-gbq",
+    "google-api-python-client",
+    "google-cloud-bigquery",
+    "google-cloud-storage",
+    "google-auth",
+    "gspread",
+]
+airflow = [
+    "apache-airflow-providers-google",
+    "apache-airflow-providers-postgres",
 ]
 
 [tool.setuptools.packages.find]

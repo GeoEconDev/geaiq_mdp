@@ -6,6 +6,26 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a11: Lazy imports y adaptador Airflow para conectores GCP
+
+**Resumen:** Las dependencias de Google (BigQuery, Drive, Storage, gspread, geopandas, pandas-gbq) causaban conflictos de `cryptography` al instalar `geaiq_mdp` en un entorno Airflow. Se refactorizan los imports a lazy y se introduce un sistema de adaptadores con auto-detección de backend.
+
+### Cambios
+
+- **`pyproject.toml`**: dependencias GCP movidas de `dependencies` a `[project.optional-dependencies]`. Nuevos extras: `gcp` (clientes directos de Google) y `airflow` (providers de Airflow). Versión bumpeada a `0.1.0a11`.
+- **`gcp.py`**: todos los imports de `google.*`, `gspread`, `googleapiclient` y `pandas_gbq` son ahora lazy dentro de cada función. El módulo se puede importar sin Google instalado.
+- **`bigquery.py`**: imports de `pandas_gbq` y `google.api_core.exceptions` movidos a lazy dentro de `run_query` y `test_source`.
+- **`shape.py`**: imports de `googleapiclient` y `geopandas` movidos a lazy dentro de `download_file` y `run_query`.
+- **`processors.py`**: `get_processor()` refactorizado con imports lazy de los procesadores. Nueva función `_detect_backend(platform)` que auto-detecta si los Airflow providers están disponibles (`airflow` backend) o si usar los clientes directos de Google (`gcp` backend).
+- **`airflow_bq.py`** (nuevo): `AirflowBigQueryProcessor` — adaptador que usa `BigQueryHook` de `apache-airflow-providers-google`. Compatible con la interfaz `Processor` existente; sin conflictos de dependencias en entornos Airflow.
+
+### Comportamiento
+
+- `pip install geaiq_mdp` en un entorno Airflow → auto-detecta hooks, sin conflicto de `cryptography`.
+- `pip install geaiq_mdp[gcp]` en notebooks/API → usa clientes directos de Google como antes.
+
+---
+
 ## 2026-06-02 — v0.1.0a10: Autenticación Bearer en `GeoEconAPI`
 
 **Resumen:** El cliente `GeoEconAPI` no enviaba credenciales al hacer requests, causando errores 403 "Not authenticated" en endpoints protegidos (como `POST /r/{step}/{status}` para subir reportes). Se agrega soporte de autenticación vía variable de entorno.

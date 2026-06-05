@@ -1,16 +1,16 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from typing import TYPE_CHECKING
-from geaiq_mdp.enums import Encodings
-from .gcp import setup_bq
 from time import time
-from .processor import ProcessorError, Processor, cache
+from .processor import Processor, cache, ProcessorError
 
 if TYPE_CHECKING:
     from .models import Source
 
 
-class BigQuerySourceProcessor(Processor):
-    def __init__(self, **kwargs):
+class AirflowBigQueryProcessor(Processor):
+    def __init__(self, gcp_conn_id: str = "google_cloud_default", **kwargs):
+        self.gcp_conn_id = gcp_conn_id
+        self.hook = None
         self.client_bq = None
         self.user = None
         self.project = None
@@ -22,50 +22,46 @@ class BigQuerySourceProcessor(Processor):
 
     def setup(self, *args, **kwargs):
         super().setup(*args, **kwargs)
-        if not self.client_bq:
-            self.client_bq = setup_bq()
-            self.user = (
-                getattr(self.client_bq._credentials, "account", None)
-                or getattr(self.client_bq._credentials, "service_account_email", None)
-                or getattr(self.client_bq._credentials, "signer_email", None)
-                or "OAuth User Account"
-            )
-            self.project = self.client_bq.project
+        if not self.hook:
+            from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+            self.hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id)
+            self.client_bq = self.hook.get_client()
+            self.project = self.hook.project_id
+            self.user = self.gcp_conn_id
 
     @cache("query", lambda self, source, *args: f"{source.slug}")
     def run_query(self, source: Source):
-        import pandas_gbq as pdgbq
-        from pandas_gbq.exceptions import GenericGBQException
         source_name = source.slug
         query = source.source.query
         start_time = time()
 
         try:
-            df = pdgbq.read_gbq(query, progress_bar_type=None)
-        except GenericGBQException as exc:
+            df = self.hook.get_pandas_df(sql=query)
+        except Exception as exc:
             self.report.append(
                 {
                     "type": "error",
-                    "message": "Generic Big Query Exception",
+                    "message": "BigQuery Exception",
                     "details": [query, str(exc)],
                 }
             )
             raise ProcessorError(exc) from exc
         finally:
-            query_time = time() - start_time
             self.report.append(
                 {
                     "type": "info",
                     "message": f"Source query {source_name} time",
-                    "details": [f"{query_time:0.3f}seg"],
+                    "details": [f"{time() - start_time:0.3f}seg"],
                 }
             )
         return df
 
     def test_source(self, source: Source):
         from google.api_core.exceptions import Forbidden, NotFound, BadRequest
+        from google.cloud.bigquery import QueryJobConfig
+        job_config = QueryJobConfig(dry_run=True, use_query_cache=False)
         try:
-            query_job = self.client_bq.query(source.source.query)
+            query_job = self.client_bq.query(source.source.query, job_config=job_config)
         except BadRequest as exc:
             self.report.append(
                 {"type": "error", "message": "BadRequest query", "details": [str(exc)]}
@@ -87,7 +83,6 @@ class BigQuerySourceProcessor(Processor):
                     "project": self.project,
                     "details": [
                         f"{err['message']}",
-                        f"Check if your query depends on a spreadsheet, and share it with {self.user} if it does",
                         f"Tables: {tables}",
                         f"Query Job: [{exc.query_job.job_id}](https://console.cloud.google.com/bigquery?project={exc.query_job.project}&j={exc.query_job.job_id})",
                         f"Query:\n\n```sql\n{exc.query_job.query}\n```\n",
@@ -108,29 +103,20 @@ class BigQuerySourceProcessor(Processor):
                 "numerical": {
                     f.name: f.field_type
                     for f in query_job.schema
-                    if f.field_type
-                    in ("INTEGER", "FLOAT", "NUMERIC", "BOOLEAN", "BIGNUMERIC")
+                    if f.field_type in ("INTEGER", "FLOAT", "NUMERIC", "BOOLEAN", "BIGNUMERIC")
                 },
                 "strings": {
                     f.name: f.field_type
                     for f in query_job.schema
-                    if f.field_type
-                    in (
-                        "STRING",
-                        "BYTES",
-                        "TIMESTAMP",
-                        "DATE",
-                        "TIME",
-                        "DATETIME",
-                        "GEOGRAPHY",
-                        "JSON",
-                        "RECORD",
+                    if f.field_type in (
+                        "STRING", "BYTES", "TIMESTAMP", "DATE", "TIME",
+                        "DATETIME", "GEOGRAPHY", "JSON", "RECORD",
                     )
                 },
                 "categoricals": {
                     f.name: f.field_type
                     for f in query_job.schema
-                    if f.field_type in ("RANGE")
+                    if f.field_type in ("RANGE",)
                 },
             },
         }

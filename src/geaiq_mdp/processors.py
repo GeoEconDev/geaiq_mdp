@@ -2,51 +2,68 @@
 from typing import TYPE_CHECKING
 
 from geaiq_mdp.enums import SourcePlatform, SourceType
-from geaiq_mdp.bigquery import BigQuerySourceProcessor
-from geaiq_mdp.shape import ShapeProcessor
 from geaiq_mdp.todo import source_type_todo_error
 
 if TYPE_CHECKING:
     from geaiq_mdp.models import Source
 
 
-class PostgreSQLSourceProcessor:
-    """Placeholder — PostgreSQL source processor not yet implemented."""
-
-    def check(self, source, *args, **kwargs):
-        raise NotImplementedError(
-            f"PostgreSQL source processor is not yet implemented. "
-            f"Source: {source.slug}"
-        )
-
-    def deploy(self, source, *args, **kwargs):
-        raise NotImplementedError(
-            f"PostgreSQL source processor is not yet implemented. "
-            f"Source: {source.slug}"
-        )
-
-
-_platform_processors = {
-    ("sql", SourcePlatform.BIGQUERY):    BigQuerySourceProcessor,
-    ("sql", SourcePlatform.POSTGRESQL):  PostgreSQLSourceProcessor,
-    ("shape", SourcePlatform.GOOGLEDRIVE): ShapeProcessor,
-}
-
-# Kept for backward compatibility with any code that still imports this dict.
-source_type_processors = {
-    SourceType.TODO:  source_type_todo_error,
-    SourceType.QUERY: BigQuerySourceProcessor,
-    SourceType.SHAPE: ShapeProcessor,
-}
+def _detect_backend(platform: SourcePlatform) -> str:
+    if platform == SourcePlatform.BIGQUERY:
+        try:
+            import airflow.providers.google.cloud.hooks.bigquery  # noqa: F401
+            return "airflow"
+        except ImportError:
+            return "gcp"
+    if platform == SourcePlatform.POSTGRESQL:
+        try:
+            import airflow.providers.postgres.hooks.postgres  # noqa: F401
+            return "airflow"
+        except ImportError:
+            return "direct"
+    return "gcp"
 
 
 def get_processor(source: Source):
     """Return the appropriate processor instance for a source."""
-    key = (source.source.type, source.source.platform)
-    processor_cls = _platform_processors.get(key)
-    if processor_cls is None:
-        raise ValueError(
-            f"No processor available for type='{source.source.type}' "
-            f"platform='{source.source.platform.value}' (source: {source.slug})"
+    source_type = source.source.type
+    platform = source.source.platform
+    backend = _detect_backend(platform)
+
+    if source_type == "sql" and platform == SourcePlatform.BIGQUERY:
+        if backend == "airflow":
+            from geaiq_mdp.airflow_bq import AirflowBigQueryProcessor
+            return AirflowBigQueryProcessor()
+        from geaiq_mdp.bigquery import BigQuerySourceProcessor
+        return BigQuerySourceProcessor()
+
+    if source_type == "sql" and platform == SourcePlatform.POSTGRESQL:
+        if backend == "airflow":
+            from geaiq_mdp.airflow_pg import AirflowPostgreSQLProcessor
+            return AirflowPostgreSQLProcessor()
+        raise NotImplementedError(
+            f"PostgreSQL direct connector not yet implemented. Source: {source.slug}"
         )
-    return processor_cls()
+
+    if source_type == "shape" and platform == SourcePlatform.GOOGLEDRIVE:
+        from geaiq_mdp.shape import ShapeProcessor
+        return ShapeProcessor()
+
+    raise ValueError(
+        f"No processor available for type='{source_type}' "
+        f"platform='{platform.value}' (source: {source.slug})"
+    )
+
+
+# Kept for backward compatibility — requires geaiq_mdp[gcp] installed.
+def _lazy_source_type_processors():
+    from geaiq_mdp.bigquery import BigQuerySourceProcessor
+    from geaiq_mdp.shape import ShapeProcessor
+    return {
+        SourceType.TODO:  source_type_todo_error,
+        SourceType.QUERY: BigQuerySourceProcessor,
+        SourceType.SHAPE: ShapeProcessor,
+    }
+
+
+source_type_processors = None  # use _lazy_source_type_processors() instead

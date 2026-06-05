@@ -7,8 +7,6 @@ from pathlib import Path
 import re
 import logging
 
-from googleapiclient.http import MediaIoBaseDownload
-from googleapiclient.errors import HttpError
 import numpy as np
 from geaiq_mdp.enums import Encodings, Environments
 from geaiq_mdp.geoecon_api import GeoEconAPIError
@@ -18,7 +16,6 @@ from geaiq_mdp.processor import EncodingError, Processor, cache, ProcessorError
 from geaiq_mdp.gcp import setup_drive
 from geaiq_mdp.models import ColumnRef
 import zipfile
-import geopandas as gpd
 
 from geaiq_mdp.utils import es_legible_unicode
 
@@ -45,6 +42,8 @@ class ShapeProcessor(Processor):
         self.drive_service = setup_drive()
 
     def download_file(self, file_id, target_dir):
+        from googleapiclient.http import MediaIoBaseDownload
+        from googleapiclient.errors import HttpError
         request = self.drive_service.files().get_media(fileId=file_id)
         try:
             file_metadata = (
@@ -84,7 +83,7 @@ class ShapeProcessor(Processor):
         return target_file
 
     @cache("query", lambda self, source, *args: f"{source.slug}")
-    def run_query(self, source: Source) -> gpd.DataFrame:
+    def run_query(self, source: Source):
         source_name = source.slug
         files = source.source.files
         input_encoding = source.input_encoding
@@ -105,6 +104,7 @@ class ShapeProcessor(Processor):
                 with zipfile.ZipFile(fpath, "r") as zip_ref:
                     zip_ref.extractall(temp_dir)
 
+        import geopandas as gpd
         try:
             shape_file = next(f for f in temp_dir.iterdir() if f.suffix == ".shp")
         except StopIteration:
@@ -112,7 +112,7 @@ class ShapeProcessor(Processor):
 
         try:
             gdf = gpd.read_file(shape_file, encoding=input_encoding.value)
-        except UnicodeDecodeError as err:
+        except UnicodeDecodeError:
             raise EncodingError(
                 f"{input_encoding} is invalid. Please try change input encondig to: utf_8, cp850, latin_1, ascii, etc..."
             )
@@ -120,6 +120,7 @@ class ShapeProcessor(Processor):
         return gdf
 
     def test_source(self, source: Source):
+        import geopandas as gpd
         logging.info("Testing source: %s", source.slug)
         data = self.run_query(source)
         if data.empty:
