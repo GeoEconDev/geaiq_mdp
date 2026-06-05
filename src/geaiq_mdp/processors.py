@@ -39,14 +39,14 @@ def get_processor(source: Source):
     if source_type == "sql" and platform == SourcePlatform.BIGQUERY:
         if backend == "airflow":
             from geaiq_mdp.airflow_bq import AirflowBigQueryProcessor
-            return AirflowBigQueryProcessor()
+            return AirflowBigQueryProcessor(slug=source.slug)
         from geaiq_mdp.bigquery import BigQuerySourceProcessor
         return BigQuerySourceProcessor()
 
     if source_type == "sql" and platform == SourcePlatform.POSTGRESQL:
         if backend == "airflow":
             from geaiq_mdp.airflow_pg import AirflowPostgreSQLProcessor
-            return AirflowPostgreSQLProcessor()
+            return AirflowPostgreSQLProcessor(slug=source.slug)
         raise NotImplementedError(
             f"PostgreSQL direct connector not yet implemented. Source: {source.slug}"
         )
@@ -54,7 +54,7 @@ def get_processor(source: Source):
     if source_type == "shape" and platform == SourcePlatform.GOOGLEDRIVE:
         if backend == "airflow":
             from geaiq_mdp.airflow_shape import AirflowShapeProcessor
-            return AirflowShapeProcessor()
+            return AirflowShapeProcessor(slug=source.slug)
         from geaiq_mdp.shape import ShapeProcessor
         return ShapeProcessor()
 

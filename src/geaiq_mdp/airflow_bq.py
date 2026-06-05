@@ -8,7 +8,8 @@ if TYPE_CHECKING:
 
 
 class AirflowBigQueryProcessor(Processor):
-    def __init__(self, gcp_conn_id: str = "google_cloud_default", **kwargs):
+    def __init__(self, slug: str = "", gcp_conn_id: str = "google_cloud_default", **kwargs):
+        self.slug = slug
         self.gcp_conn_id = gcp_conn_id
         self.hook = None
         self.client_bq = None
@@ -24,7 +25,9 @@ class AirflowBigQueryProcessor(Processor):
         super().setup(*args, **kwargs)
         if not self.hook:
             from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
-            self.hook = BigQueryHook(gcp_conn_id=self.gcp_conn_id)
+            from geaiq_mdp.airflow_utils import resolve_conn_id
+            conn_id = resolve_conn_id(self.slug, self.gcp_conn_id)
+            self.hook = BigQueryHook(gcp_conn_id=conn_id)
             self.client_bq = self.hook.get_client()
             self.project = self.hook.project_id
             self.user = self.gcp_conn_id

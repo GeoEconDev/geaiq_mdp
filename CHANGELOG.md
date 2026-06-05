@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a13: Resolución de conexiones Airflow por slug (mdp.{slug})
+
+**Resumen:** Los adaptadores Airflow ahora intentan usar una conexión específica por fuente antes de caer al default de plataforma. La convención es `mdp.{slug}` — si esa conexión existe en Airflow, se usa; si no, se usa `google_cloud_default` o `postgres_default`.
+
+### Cambios
+
+- **`airflow_utils.py`** (nuevo): función `resolve_conn_id(slug, default)` — busca `mdp.{slug}` via `Connection.get_connection_from_secrets()` (también cubre env vars `AIRFLOW_CONN_MDP_*`), retorna el default si no existe.
+- **`airflow_bq.py`**, **`airflow_pg.py`**, **`airflow_shape.py`**: aceptan `slug` en el constructor y llaman a `resolve_conn_id()` en `setup()`.
+- **`processors.py`**: pasa `slug=source.slug` al construir cada adaptador Airflow.
+
+---
+
 ## 2026-06-05 — v0.1.0a12: AirflowShapeProcessor para fuentes Google Drive
 
 **Resumen:** Completa el soporte Airflow para todos los tipos de fuente. `ShapeProcessor` (Google Drive) ahora tiene su adaptador Airflow usando `GoogleDriveHook`.

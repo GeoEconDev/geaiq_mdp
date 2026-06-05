@@ -8,7 +8,8 @@ if TYPE_CHECKING:
 
 
 class AirflowPostgreSQLProcessor(Processor):
-    def __init__(self, postgres_conn_id: str = "postgres_default", **kwargs):
+    def __init__(self, slug: str = "", postgres_conn_id: str = "postgres_default", **kwargs):
+        self.slug = slug
         self.postgres_conn_id = postgres_conn_id
         self.hook = None
         self.user = None
@@ -22,7 +23,9 @@ class AirflowPostgreSQLProcessor(Processor):
         super().setup(*args, **kwargs)
         if not self.hook:
             from airflow.providers.postgres.hooks.postgres import PostgresHook
-            self.hook = PostgresHook(postgres_conn_id=self.postgres_conn_id)
+            from geaiq_mdp.airflow_utils import resolve_conn_id
+            conn_id = resolve_conn_id(self.slug, self.postgres_conn_id)
+            self.hook = PostgresHook(postgres_conn_id=conn_id)
             self.user = self.postgres_conn_id
 
     @cache("query", lambda self, source, *args: f"{source.slug}")
