@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-05 — v0.1.0a16: fix versión del CLI siempre mostraba 0.1.0a10
+
+**Resumen:** `version.py` tenía la versión hardcodeada en un diccionario que nunca se actualizaba al subir la versión del paquete. `get_version_string()` siempre retornaba `0.1.0a10` independientemente de la versión instalada. Se reemplazó por `importlib.metadata.version()` que lee la versión real del paquete instalado.
+
+### Cambios
+
+- **`src/geaiq_mdp/version.py`**: reemplaza el dict `VERSION` hardcodeado por `importlib.metadata.version("geaiq_mdp")`.
+
+---
+
 ## 2026-06-05 — v0.1.0a15: Migración de tests a pytest
 
 **Resumen:** Los tests del proyecto fueron migrados a pytest. Se agregó configuración de pytest en `pyproject.toml` y en `.vscode/settings.json` para que VS Code los descubra automáticamente.

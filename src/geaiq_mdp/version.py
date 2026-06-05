@@ -1,16 +1,10 @@
-﻿VERSION = {"major": 0, "minor": 1, "micro": 0, "releaselevel": "alpha", "serial": 10}
+from importlib.metadata import version, PackageNotFoundError
+
+try:
+    _VERSION = version("geaiq_mdp")
+except PackageNotFoundError:
+    _VERSION = "0.0.0+unknown"
 
 
 def get_version_string():
-    """Prints the version of the geaiq_mdp package."""
-    major = VERSION["major"]
-    minor = VERSION["minor"]
-    micro = VERSION["micro"]
-    releaselevel = VERSION["releaselevel"]
-    serial = VERSION["serial"]
-
-    version_string = f"{major}.{minor}.{micro}"
-    if releaselevel != "final":
-        version_string += f"{releaselevel[0]}{serial}"
-
-    return version_string
+    return _VERSION
