@@ -18,13 +18,13 @@
 - [ ] **TECH-05 — `typo` confuso**: en `ObservableScale`/`Class_` significa "tipo". Alias `kind` con fallback `typo`.
 - [ ] **TECH-06 — Campos muertos en YAML**: `state`, `source_message` (vacíos), `old_source` (queries obsoletas, peligroso). Limpiar.
 - [ ] **TECH-07 — Idioma mezclado es/en** en logs/CLI → dificulta grep en prod. Unificar.
-- [ ] **TECH-10 — Tests insuficientes**: ver `docs/tests.md`. Agregar pytest a pyproject + config + markers + tests unitarios de modelos.
+- [ ] **TECH-10 — Cobertura de tests insuficiente**: el harness ya existe (pytest en pyproject + config, a15). Resta agregar markers y tests unitarios de modelos/adapters. Ver `docs/tests.md`.
 
 ## 🌱 Mejoras / pendientes del ecosistema
 
-- [ ] **Implementar `PostgreSQLSourceProcessor`** (`processors.py`, hoy `NotImplementedError`): es la persistencia-a-postgres que pide el repo padre (`geoecon_map` § design-data-abstraction). Habilita `source.platform: postgresql`.
+- [x] **Implementar fuente PostgreSQL** — hecho en a11/a13 vía `AirflowPostgreSQLProcessor` (`airflow_pg.py`, `PostgresHook`, `EXPLAIN` como dry-run). Habilita `source.platform: postgresql` cuando corre en Airflow. NO hay cliente directo Postgres (en backend `gcp`/directo sigue dando `NotImplementedError`) — pendiente solo si se necesita fuera de Airflow.
 - [ ] **Extender `MeasurementUnit`** con unidades faltantes (CO2eq, Kelvin/°C explícito, µg/m³) — junta con la tarea de unidades del repo padre (el card mostraba "0 hab." para emisiones).
-- [ ] **Cablear el harness de tests** (pytest en pyproject + conftest + `make test`). Ver `docs/tests.md § Próximos pasos`.
+- [x] **Cablear el harness de tests** — hecho en a15: extra `[test]` + `[tool.pytest.ini_options]` en `pyproject.toml`, tests migrados a pytest (assertions/fixtures), descubrimiento en VS Code. Resta: subir cobertura (TECH-10) y `make test`.
 
 ---
 

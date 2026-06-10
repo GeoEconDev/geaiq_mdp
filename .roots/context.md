@@ -1,6 +1,8 @@
 ﻿# geaiq_mdp — Context (briefing del proyecto)
 
-> Briefing para agentes de IA y devs. Generado 27 May 2026 releyendo README/DESIGN/AGENTS/BACKLOG/CHANGELOG + código. Mantener actualizado al cambiar stack/arquitectura.
+> Briefing para agentes de IA y devs. Generado 27 May 2026 releyendo README/DESIGN/AGENTS/BACKLOG/CHANGELOG + código; actualizado 9 Jun 2026 (releases a11–a16). Mantener actualizado al cambiar stack/arquitectura.
+>
+> **Versión actual: `0.1.0a16`** (`version.py` ahora lee `importlib.metadata.version()`, ya no hardcodeada — a16).
 
 ## Qué es
 
@@ -19,9 +21,10 @@ metadata/*.yml  →  parse (PersistentAnchorYAML + Pydantic v2)
 
 ## Stack
 
-- **Python ≥ 3.11**, Pydantic v2, Click (CLI), ruamel.yaml (anclas persistentes), GitPython.
-- **GCP**: google-cloud-bigquery, google-cloud-storage, google-api-python-client (Drive), pandas-gbq, gspread, geopandas.
-- **Deploy**: Dockerfile (python:3.11-slim) → Artifact Registry → **Cloud Run Job** `metadata` (proyecto `geoecon-dev`, us-central1). CI en `cloudbuild.yaml`.
+- **Python ≥ 3.11**, Pydantic v2, Click (CLI), ruamel.yaml (anclas persistentes), GitPython. (core, sin GCP)
+- **Extras** (a11): `geaiq_mdp[gcp]` = clientes directos de Google (bigquery, storage, api-python-client/Drive, pandas-gbq, gspread, geopandas) · `geaiq_mdp[airflow]` = providers Airflow (google, postgres) · `[test]` = pytest, pandas. Las deps GCP salieron de `dependencies` para evitar el conflicto `cryptography` en Airflow.
+- **Backends** (a11–a13): el CLI corre con clientes directos (`gcp`) o adaptadores Airflow (`airflow_bq/pg/shape.py`, via Hooks) según `_detect_backend()`. Conexión por source: `mdp.{slug}`. Ver `docs/processors-and-backends.md`.
+- **Deploy**: Dockerfile (python:3.11-slim) → Artifact Registry → **Cloud Run Job** `metadata` (proyecto `geoecon-dev`, us-central1). CI en `cloudbuild.yaml`. También se instala en el worker Airflow del DAG `metadata_processor`.
 
 ## Archivos críticos (`src/geaiq_mdp/`)
 
@@ -34,8 +37,9 @@ metadata/*.yml  →  parse (PersistentAnchorYAML + Pydantic v2)
 | `io_sources.py` | `iter_sources()` — selección de archivos según `--context`. | `docs/architecture.md` |
 | `checker.py` / `deployer.py` | Orquestan check / deploy. | `docs/architecture.md` |
 | `processor.py` (1851 líneas) | Clase base `Processor` + 28+ excepciones; transformación geo/datos/dims. | `docs/architecture.md` |
-| `processors.py` | Factory `get_processor()` → BigQuery / Shape (+ PostgreSQL placeholder). | `docs/architecture.md` |
-| `bigquery.py` / `shape.py` | Procesadores concretos (dry-run BQ / descarga Drive). | `docs/architecture.md` |
+| `processors.py` | Factory `get_processor()` por `(type, platform)` + `_detect_backend()` (gcp/airflow). | `docs/processors-and-backends.md` |
+| `bigquery.py` / `shape.py` | Procesadores directos GCP (dry-run BQ / descarga Drive). Requieren `[gcp]`. | `docs/processors-and-backends.md` |
+| `airflow_bq.py` / `airflow_pg.py` / `airflow_shape.py` / `airflow_utils.py` | Adaptadores Airflow (Hooks) + `resolve_conn_id` (`mdp.{slug}`). Requieren `[airflow]`. | `docs/processors-and-backends.md` |
 | `geoecon_api.py` | Cliente HTTP de la GeaIQ API (`wh/*`, `ui/tags`). | `docs/architecture.md` |
 | `models/*.py` | Modelos Pydantic (Source, Column, Dimension, wh, menu). | `docs/models-yaml-schema.md` |
 | `enums.py` | SourceType/Platform/Status, ReliabilityType, **MeasurementUnit**, ObservableScale(Type)Enum. | `docs/models-yaml-schema.md` |
@@ -50,7 +54,7 @@ metadata/*.yml  →  parse (PersistentAnchorYAML + Pydantic v2)
 
 ## Tests
 
-5 archivos en `src/tests/` (`test_yml_anchor`, `test_yml_data`, `test_yml_parsing`, `test_report` = offline; `test_query` = requiere GCP/BigQuery). **`pytest` NO está en `pyproject.toml`** ni hay `[tool.pytest]`/conftest. Para correr: `pip install pytest && pytest src/tests/`. Cobertura insuficiente (TECH-10). Detalle en `docs/tests.md`.
+5 archivos en `src/tests/` (`test_yml_anchor`, `test_yml_data`, `test_yml_parsing`, `test_report` = offline; `test_query` = requiere GCP/BigQuery, marcado `@pytest.mark.skip`). **Migrados a pytest (a15):** extra `[test]` (pytest, pandas) + `[tool.pytest.ini_options]` (`testpaths=["src/tests"]`, `pythonpath=["src"]`) en `pyproject.toml`, descubrimiento en VS Code. Correr: `pip install -e .[test] && pytest`. Detalle en `docs/tests.md`.
 
 ## Relación con otros repos
 

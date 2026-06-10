@@ -80,3 +80,50 @@ giqmd --target dev init                             # solo 1 vez por entorno
 ## Branches
 
 `develop` (integración) + 1 rama por colaborador: `cr` (Cristian Rocha), `jp`, `jm`, `vs`, `na`, `fc`. Merge sin PR, automatizado con `make sync`. (Evita conflictos YAML entre analistas que tocan distintos países.)
+
+## Processors y backends (v0.1.0a11–a13, 2026-06-05)
+
+> Doc dedicado: `docs/processors-and-backends.md` (registry, adapters, extras). Resumen operativo acá.
+
+`get_processor(source)` (`processors.py`) elige el processor por `(type, platform)` y **auto-detecta backend**
+(`_detect_backend`): si los providers de Airflow están instalados, usa los adaptadores de Airflow; si no, los
+clientes directos de Google (`geaiq_mdp[gcp]`).
+
+| type / platform | backend `airflow` (en el stack) | backend directo |
+|---|---|---|
+| sql / bigquery | `AirflowBigQueryProcessor` (`airflow_bq.py`, `BigQueryHook`) | `BigQuerySourceProcessor` (`bigquery.py`, requiere `[gcp]`) |
+| sql / postgresql | `AirflowPostgreSQLProcessor` (`airflow_pg.py`, `PostgresHook`) | ❌ `NotImplementedError` (sin cliente directo) |
+| shape / googledrive | `AirflowShapeProcessor` (`airflow_shape.py`, `GoogleDriveHook`) (a12) | `ShapeProcessor` (`shape.py`, requiere `[gcp]`) |
+
+- **Lazy imports + extras:** las deps GCP (bigquery/drive/storage/gspread/geopandas/pandas-gbq) pasaron a
+  `[project.optional-dependencies]` (extras `gcp` y `airflow`) e imports lazy. Motivo: evitar el conflicto de
+  `cryptography` al instalar en el entorno Airflow (incidente 2026-06-05). `pip install geaiq_mdp` ya no
+  arrastra google→cryptography; `pip install geaiq_mdp[gcp]` mantiene los clientes directos, `[airflow]` los
+  providers de Airflow.
+
+### Conexión por slug — convención `mdp.{slug}` (a13)
+
+Cada adaptador Airflow recibe `slug=source.slug` desde `get_processor()` y, en su `setup()`, resuelve la
+conexión vía `resolve_conn_id(slug, default)` (`airflow_utils.py:5`):
+
+1. Si existe una conexión Airflow `mdp.{slug}` (`Connection.get_connection_from_secrets("mdp.{slug}")`,
+   que también cubre la env var `AIRFLOW_CONN_MDP_{SLUG}`), se usa **esa**.
+2. Si no, cae al default por plataforma: `google_cloud_default` (BigQuery/Drive) o `postgres_default` (Postgres).
+
+Así un source elige su conexión postgres/bq sin tocar código: basta crear `mdp.{slug}` en Airflow. Esto cierra
+el gap "cómo elige un source su conexión" (antes pendiente para Postgres).
+
+## Exit codes — `ExitCode` enum (a14)
+
+`giqmd` mapea el peor tipo de mensaje del reporte a un código de salida vía `ExitCode(int, Enum)`
+(`enums.py:347`), que **reemplazó** al dict local `EXIT_MAP` de `giqmd.py`:
+
+| miembro | valor | significado |
+|---|---|---|
+| `info` / `ok` | 0 | sin problemas |
+| `warning` | 1 | advertencias |
+| `error` | 2 | errores |
+
+`worst_report_type()` (`giqmd.py:259`) toma `max(..., key=lambda a: ExitCode[a])` y `cli` hace `ctx.exit()`
+con ese código. Moverlo a `enums.py` (módulo liviano) permite que el DAG de Airflow importe `ExitCode` sin
+arrastrar el import de `gspread` que vivía en `giqmd.py`.

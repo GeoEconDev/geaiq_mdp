@@ -35,6 +35,8 @@
 | **ObservableScaleEnum** | país, departamento, partido, distrito, provincia, municipio, isla, cantón, area no municipalizada, **point**, corregimiento, unidad federativa |
 | **ObservableScaleTypeEnum** | abstract, UTA, UTS, **location**, cluster, functional region |
 | **ObservableClassEnum** | 14 clases (territoriales, económicas, educativas, …) |
+| **ExitCode** (`int, Enum`) | `info`/`ok`=0, `warning`=1, `error`=2 — código de salida del CLI (a14, reemplaza `EXIT_MAP`). Vive en `enums.py` (módulo liviano) para que el DAG Airflow lo importe sin arrastrar `gspread`. |
+| **ShapeOperationEnum** | dissolve, … (operaciones geométricas) |
 
 > **Relevante para el ecosistema GeoEcon:** `MeasurementUnit` es la fuente canónica de la unidad de un indicador (resuelve la tarea "unit del modelo, no heurística" del repo padre). `SourcePlatform` (postgresql) es el destino de persistencia configurable. `ObservableScaleType` (admin/UTA/location/point) = la dimensión geográfica reusable.
 
