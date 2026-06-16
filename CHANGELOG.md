@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a24: fix check_geometry falla cuando GeoDataFrame no tiene CRS
+
+**Resumen:** `check_geometry()` llamaba `geodata.crs.to_string()` sin verificar que `crs` no sea `None`. Cuando la geometría construida no tiene CRS asignado, esto lanzaba `AttributeError: 'NoneType' object has no attribute 'to_string'`.
+
+### Cambios
+
+- **`src/geaiq_mdp/processor.py`**: `check_geometry()` verifica `geodata.crs is not None` antes de llamar `.to_string()`; si es `None` reporta `"No CRS defined"`. También se corrigió el doble paréntesis en el nombre del mensaje `((CRS))`.
+
+---
+
 ## 2026-06-16 — v0.1.0a23: fix run_query usa get_conn() directo en lugar de get_pandas_df()
 
 **Resumen:** `run_query()` usaba `hook.get_pandas_df()` que en versiones recientes de `apache-airflow-providers-postgres` delega en SQLAlchemy 2.x, cuyo objeto `Connection` no tiene `.cursor()`. Esto causaba `AttributeError: 'Connection' object has no attribute 'cursor'` al ejecutar la query real. La fix reemplaza `get_pandas_df()` por `hook.get_conn()` + `pd.read_sql()` directamente, igual que ya hace `test_source()`.

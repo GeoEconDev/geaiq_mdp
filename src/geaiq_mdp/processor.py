@@ -1100,7 +1100,8 @@ class Processor(Reportable):
             geometry=geometry,
         )
         self.info(
-            "Sistema de referencia de coordenadas ((CRS))", geodata.crs.to_string()
+            "Sistema de referencia de coordenadas (CRS)",
+            geodata.crs.to_string() if geodata.crs is not None else "No CRS defined",
         )
         try:
             geodata = geodata.to_crs(epsg=4326)
