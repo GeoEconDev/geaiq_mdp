@@ -670,27 +670,20 @@ class GeoEconAPI:
                 raise DataError(uuid, detail)
         pass
 
-    def upload_report(self, step: str, status: str, file_path: Path):
-        """
-        Uploads a report to the specified endpoint.
-
-        Args:
-            step (str): The step identifier for the report.
-            status (str): The status identifier for the report.
-            file_path (Path): The path to the report file to be uploaded.
-
-        Returns:
-            Response: The response from the POST request.
-        """
+    def upload_report(self, step: str, status: str, file_path: Path, run_uuid: str = None):
+        if run_uuid:
+            endpoint = f"r/{step}/run/{run_uuid}"
+            public_path = f"reports/{step}/run/{run_uuid}/{file_path.name}"
+        else:
+            endpoint = f"r/{step}/{status}"
+            public_path = f"reports/{step}/{status}/{file_path.name}"
         with open(file_path, "rb") as file_data:
             files = {"file": (file_path.name, file_data)}
-            message = self.post(f"r/{step}/{status}", add_final_slash=False, files=files)
-        
+            message = self.post(endpoint, add_final_slash=False, files=files)
         if message['message']:
-            return self.static_uri + f"reports/{step}/{status}/{file_path.name}"
-        else:
-            logging.warning("Report upload failed with {}".format(message))
-            return None
+            return self.static_uri + public_path
+        logging.warning("Report upload failed with %s", message)
+        return None
 
 class GeoEconAPIDev(GeoEconAPI):
     static_uri = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
