@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a17: fix AttributeError en checker y deployer al llamar get_source
+
+**Resumen:** `checker()` y `deployer()` llamaban `target.get_source(src)` sobre el parámetro `target`, que es un enum `Environments` (string enum sin ese método). `get_source` es un método de `GeoEconAPI`. El error causaba que cualquier ejecución del DAG `metadata_processor` fallara con `AttributeError: 'Environments' object has no attribute 'get_source'`.
+
+### Cambios
+
+- **`src/geaiq_mdp/checker.py`**: importa `GEOECON_API_MAP`; instancia `geoecon_api = GEOECON_API_MAP[target]()` una sola vez antes del loop (solo cuando `only_new=True`); reemplaza `target.get_source(src)` por `geoecon_api.get_source(src)`.
+- **`src/geaiq_mdp/deployer.py`**: ídem.
+
+---
+
 ## 2026-06-05 — v0.1.0a16: fix versión del CLI siempre mostraba 0.1.0a10
 
 **Resumen:** `version.py` tenía la versión hardcodeada en un diccionario que nunca se actualizaba al subir la versión del paquete. `get_version_string()` siempre retornaba `0.1.0a10` independientemente de la versión instalada. Se reemplazó por `importlib.metadata.version()` que lee la versión real del paquete instalado.

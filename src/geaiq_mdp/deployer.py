@@ -1,6 +1,7 @@
 ﻿import logging
 from pathlib import Path
 from geaiq_mdp.data import load_data
+from geaiq_mdp.geoecon_api import GEOECON_API_MAP
 from geaiq_mdp.io_sources import iter_sources
 from geaiq_mdp.processors import get_processor
 from geaiq_mdp.enums import Environments, SourceStatus
@@ -15,12 +16,14 @@ def deployer(file_iter, target: Environments, only_new=True, root=None):
 
     reader.push_anchors()
 
+    geoecon_api = GEOECON_API_MAP[target]() if only_new else None
+
     for src in iter_sources(
         file_iter, report, expected_status=SourceStatus.VALID, reader=reader
     ):
         logging.info("Deploying %s", src.slug)
 
-        if only_new and target.get_source(src) is not None:
+        if only_new and geoecon_api.get_source(src) is not None:
             logging.info("Ignoring existing source %s", src.slug)
             continue
 

@@ -1,6 +1,7 @@
 import logging
 from .data import load_data
 from .enums import Environments, SourceStatus
+from .geoecon_api import GEOECON_API_MAP
 from .io_sources import iter_sources
 from .persistent_anchor_yaml import PersistentAnchorYAML
 from .processors import get_processor
@@ -9,15 +10,17 @@ from .processors import get_processor
 def checker(file_iter, target: Environments, only_new=True, reader=None, root=None):
     report = []
     reader = reader or PersistentAnchorYAML(typ="safe", pure=True)
-    
+
     load_data(reader=reader, root=root)
-    
+
     reader.push_anchors()
+
+    geoecon_api = GEOECON_API_MAP[target]() if only_new else None
 
     for src in iter_sources(file_iter, report, expected_status=SourceStatus.READY, reader=reader):
         logging.info("Checking %s", src.slug)
 
-        if only_new and target.get_source(src) is not None:
+        if only_new and geoecon_api.get_source(src) is not None:
             logging.info("Ignoring existing source %s", src.slug)
             continue
 
