@@ -1,6 +1,6 @@
 [project]
 name = "geaiq_mdp"
-version = "0.1.0a17"
+version = "0.1.0a19"
 authors = [
   { name="Cristian S. Rocha", email="csrocha@gmail.com" },
 ]

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 
 class AirflowPostgreSQLProcessor(Processor):
-    def __init__(self, slug: str = "", postgres_conn_id: str = "postgres_default", **kwargs):
+    def __init__(self, slug: str = "", postgres_conn_id: str = "postgres_staging", **kwargs):
         self.slug = slug
         self.postgres_conn_id = postgres_conn_id
         self.hook = None

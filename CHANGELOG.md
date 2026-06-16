@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a19: fix conn_id por defecto en AirflowPostgreSQLProcessor
+
+**Resumen:** El default `postgres_conn_id="postgres_default"` causaba `The conn_id postgres_default isn't defined` porque esa conexión no existe en Airflow. Se cambia el default a `postgres_staging`, que sí está definida. Para fuentes que requieran otra conexión se puede crear `mdp.{slug}` en Airflow y `resolve_conn_id` la usará automáticamente.
+
+### Cambios
+
+- **`src/geaiq_mdp/airflow_pg.py`**: `postgres_conn_id` default cambiado de `"postgres_default"` a `"postgres_staging"`.
+
+---
+
 ## 2026-06-16 — v0.1.0a17: fix AttributeError en checker y deployer al llamar get_source
 
 **Resumen:** `checker()` y `deployer()` llamaban `target.get_source(src)` sobre el parámetro `target`, que es un enum `Environments` (string enum sin ese método). `get_source` es un método de `GeoEconAPI`. El error causaba que cualquier ejecución del DAG `metadata_processor` fallara con `AttributeError: 'Environments' object has no attribute 'get_source'`.
