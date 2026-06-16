@@ -47,12 +47,33 @@ HTML_HEADER = """
         }};
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
-    <script type="text/javascript" src="/statics/geoecon_api_menu.js?st={st}"></script>
-    <link rel="stylesheet" href="/statics/styles.css?st={st}">
+    <style>
+        body {{
+            background: #ffffff;
+            color: #1a1a1a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 1em 1.5em;
+        }}
+        h1, h2, h3, h4, h5, h6 {{ color: #111; margin-top: 1.2em; margin-bottom: .4em; }}
+        h3 {{ font-size: 1em; }}
+        h4 {{ font-size: .95em; color: #333; }}
+        h5, h6 {{ font-size: .9em; color: #555; }}
+        code {{ background: #f3f3f3; color: #c7254e; padding: 1px 4px; border-radius: 3px; font-size: .92em; }}
+        pre  {{ background: #f6f6f6; border: 1px solid #e0e0e0; border-radius: 4px; padding: .8em 1em; overflow-x: auto; }}
+        pre code {{ background: none; color: inherit; padding: 0; }}
+        table {{ border-collapse: collapse; width: 100%; margin: .6em 0; font-size: .9em; }}
+        th {{ background: #f0f0f0; color: #222; text-align: left; padding: 5px 8px; border: 1px solid #ccc; }}
+        td {{ padding: 4px 8px; border: 1px solid #ddd; vertical-align: top; }}
+        tr:nth-child(even) td {{ background: #fafafa; }}
+        hr {{ border: none; border-top: 1px solid #e0e0e0; margin: 1em 0; }}
+        a {{ color: #1a73e8; }}
+        blockquote {{ border-left: 3px solid #ccc; margin: .5em 0; padding: .2em .8em; color: #555; }}
+    </style>
 </head>
 <body>
 """
