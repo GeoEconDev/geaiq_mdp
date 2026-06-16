@@ -686,13 +686,15 @@ class GeoEconAPI:
         return None
 
 class GeoEconAPIDev(GeoEconAPI):
-    static_uri = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
-    api_uri = static_uri + "api/v1/"
+    _api_base = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
+    static_uri = os.environ.get("GEAIQ_API_PUBLIC_URL", _api_base.rstrip("/")).rstrip("/") + "/"
+    api_uri = _api_base + "api/v1/"
 
 
 class GeoEconAPIProd(GeoEconAPI):
-    static_uri = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
-    api_uri = static_uri + "api/v1/"
+    _api_base = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com/").rstrip("/") + "/"
+    static_uri = os.environ.get("GEAIQ_API_PUBLIC_URL", _api_base.rstrip("/")).rstrip("/") + "/"
+    api_uri = _api_base + "api/v1/"
 
 
 class GeoEconAPILocal(GeoEconAPI):
