@@ -6,6 +6,17 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a26: fix GeoEconAPIMultipleItems al resolver escalas abstractas por grupo
+
+**Resumen:** `ObservableScale.set_group()` solo asignaba el grupo cuando la escala tenía `abstract_scale` (escala concreta). Para escalas abstractas como "Anexo" (sin padre), `if self.abstract_scale:` era `False` y `group_uuid` quedaba `None`. Al consultar la API con `name='Anexo', group_uuid=None`, devolvía múltiples resultados de distintos grupos (`arg_uni`, `arg_cue`), lanzando `GeoEconAPIMultipleItems`. Ahora `set_group()` siempre asigna el grupo. También se corrigió un bug de variable shadowing en `get_scale()` para el caso `str` donde la condición de filtro era siempre `False`.
+
+### Cambios
+
+- **`src/geaiq_mdp/models/wh.py`**: `set_group()` elimina la guarda `if self.abstract_scale:` — ahora siempre setea `self.group = group`.
+- **`src/geaiq_mdp/processor.py`**: `get_scale()` caso `str` — renombra variable interna del generador para evitar shadowing con el `s` string externo; agrega `default=None` al `next()`.
+
+---
+
 ## 2026-06-16 — v0.1.0a25: tipos de datos en campos + fix CRS naive geometry + fix finally bug
 
 **Resumen:** Tres mejoras en una:

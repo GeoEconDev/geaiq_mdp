@@ -93,8 +93,7 @@ class ObservableScale(GeoEconAPIModel):
     aliases: list[str] = []
 
     def set_group(self, group):
-        if self.abstract_scale:
-            self.group = group
+        self.group = group
         return self
 
     def model_dump(self, **kwargs):

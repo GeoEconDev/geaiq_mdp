@@ -1410,12 +1410,14 @@ class Processor(Reportable):
                     None,
                 )
             if isinstance(s, str):
+                scale_name = s
                 return next(
                     (
-                        s.set_group(group)
-                        for s in scales
-                        if s.name == s or s in s.aliases
-                    )
+                        scale.set_group(group)
+                        for scale in scales
+                        if scale.name == scale_name or scale_name in scale.aliases
+                    ),
+                    None,
                 )
 
         return {
