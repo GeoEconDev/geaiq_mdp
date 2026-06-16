@@ -61,6 +61,8 @@ class AirflowPostgreSQLProcessor(Processor):
             cursor = conn.cursor()
             cursor.execute(f"EXPLAIN {source.source.query}")
             plan = cursor.fetchall()
+            cursor.execute(f"SELECT * FROM ({source.source.query}) q LIMIT 0")
+            retrieved_column_names = [desc[0] for desc in cursor.description]
             cursor.close()
             conn.close()
         except Exception as exc:
@@ -72,8 +74,8 @@ class AirflowPostgreSQLProcessor(Processor):
         return {
             "estimated_cost": 0,
             "estimated_total": 0,
-            "retrieved_columns": [],
-            "retrieved_column_names": [],
+            "retrieved_columns": retrieved_column_names,
+            "retrieved_column_names": retrieved_column_names,
             "exists_shape_id": True,
             "description": {"plan": plan},
         }

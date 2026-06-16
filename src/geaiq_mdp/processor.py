@@ -507,6 +507,11 @@ class Processor(Reportable):
         ):
             raise QueryOverrideComputedColumns(override_columns)
 
+        self.info(
+            "Query structure OK",
+            {"Columns validated": len(source.columns), "Query columns": len(retrieved_column_names)},
+        )
+
         return exists_shape_id or source.shape.id.ref in computed_columns
 
     @timeout(max_check_time_seconds)
@@ -515,6 +520,10 @@ class Processor(Reportable):
 
         if not stats:
             return False
+
+        total_rows = next((v for k, v in stats if k == "Row numbers"), None)
+        if total_rows is not None:
+            self.info(f"Query returned {total_rows} records")
 
         self.info(f"Stats", stats)
         return True

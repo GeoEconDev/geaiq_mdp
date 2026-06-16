@@ -6,6 +6,18 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a22: fix PostgreSQL column detection + mejora reporte con conteo de registros
+
+**Resumen:** `AirflowPostgreSQLProcessor.test_source()` siempre devolvía `retrieved_column_names: []` porque `EXPLAIN` no retorna el esquema de columnas. Esto hacía que `check_query` reportara "Query does not solve all columns" para **todos** los campos declarados en fuentes PostgreSQL, aunque el query los incluyera. Además, el reporte no dejaba claro si la query se ejecutó ni cuántos registros devolvió.
+
+### Cambios
+
+- **`src/geaiq_mdp/airflow_pg.py`**: `test_source()` ahora ejecuta `SELECT * FROM (...) LIMIT 0` para obtener los nombres reales de columnas del query vía `cursor.description`, eliminando el falso positivo de "Query does not solve all columns".
+- **`src/geaiq_mdp/processor.py`**: `check_stats()` emite `[INFO] Query returned N records` como mensaje dedicado antes del bloque Stats detallado.
+- **`src/geaiq_mdp/processor.py`**: `check_query()` emite `[INFO] Query structure OK` con conteo de columnas validadas al finalizar sin errores.
+
+---
+
 ## 2026-06-16 — v0.1.0a21: fix report_url usa URL interna Docker en vez de URL pública
 
 **Resumen:** `GeoEconAPIDev` y `GeoEconAPIProd` usaban `GEAIQ_API_URL` (apunta a `http://geaiq_api:8000`, la URL interna del contenedor) para construir `static_uri`, que es la base de la `report_url` devuelta por `upload_report()`. El browser no puede acceder a esa URL. Ahora se usa `GEAIQ_API_PUBLIC_URL` (con fallback a `GEAIQ_API_URL`) para `static_uri`, mientras `api_uri` sigue usando `GEAIQ_API_URL` para las llamadas internas.
