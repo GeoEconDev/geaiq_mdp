@@ -102,6 +102,7 @@ class BigQuerySourceProcessor(Processor):
             "estimated_total": query_job.total_bytes_processed / 1024**3,
             "retrieved_columns": query_job.schema,
             "retrieved_column_names": [f.name for f in query_job.schema],
+            "retrieved_column_types": {f.name: f.field_type for f in query_job.schema},
             "exists_shape_id": isinstance(source.shape.id, str)
             or (source.shape.id.ref in [f.name for f in query_job.schema]),
             "description": {

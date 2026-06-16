@@ -70,6 +70,15 @@ class AirflowPostgreSQLProcessor(Processor):
             plan = cursor.fetchall()
             cursor.execute(f"SELECT * FROM ({source.source.query}) q LIMIT 0")
             retrieved_column_names = [desc[0] for desc in cursor.description]
+            type_oids = [desc[1] for desc in cursor.description]
+            cursor.execute(
+                "SELECT oid, typname FROM pg_type WHERE oid = ANY(%s)", (list(type_oids),)
+            )
+            type_map = {row[0]: row[1] for row in cursor.fetchall()}
+            retrieved_column_types = {
+                name: type_map.get(oid, str(oid))
+                for name, oid in zip(retrieved_column_names, type_oids)
+            }
             cursor.close()
             conn.close()
         except Exception as exc:
@@ -83,6 +92,7 @@ class AirflowPostgreSQLProcessor(Processor):
             "estimated_total": 0,
             "retrieved_columns": retrieved_column_names,
             "retrieved_column_names": retrieved_column_names,
+            "retrieved_column_types": retrieved_column_types,
             "exists_shape_id": True,
             "description": {"plan": plan},
         }

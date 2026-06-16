@@ -6,6 +6,21 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a25: tipos de datos en campos + fix CRS naive geometry + fix finally bug
+
+**Resumen:** Tres mejoras en una:
+1. El reporte de "Query return fields" ahora muestra el tipo de dato de cada columna (`{campo: tipo}`) en lugar de solo los nombres.
+2. `check_geometry()` setea EPSG:4326 como CRS cuando la geometría es "naive" (sin CRS), en lugar de fallar con "Cannot transform naive geometries". Aplica a fuentes con `latitude`/`longitude` explícitos (WGS84 implícito).
+3. Bug fix: `finally: return True` en `check_geometry()` overrideaba el `return False` del except, haciendo que errores de geometría siempre retornaran `True`.
+
+### Cambios
+
+- **`src/geaiq_mdp/airflow_pg.py`**: `test_source()` consulta `pg_type` para obtener nombres de tipo PostgreSQL por OID y los retorna como `retrieved_column_types`.
+- **`src/geaiq_mdp/bigquery.py`**: `test_source()` agrega `retrieved_column_types` desde `f.field_type` del schema de BigQuery.
+- **`src/geaiq_mdp/processor.py`**: `check_query()` muestra `{nombre: tipo}` en "Query return fields" si hay tipos disponibles. `check_geometry()` llama `set_crs(epsg=4326)` con warning cuando CRS es None; elimina `finally: return True`.
+
+---
+
 ## 2026-06-16 — v0.1.0a24: fix check_geometry falla cuando GeoDataFrame no tiene CRS
 
 **Resumen:** `check_geometry()` llamaba `geodata.crs.to_string()` sin verificar que `crs` no sea `None`. Cuando la geometría construida no tiene CRS asignado, esto lanzaba `AttributeError: 'NoneType' object has no attribute 'to_string'`.

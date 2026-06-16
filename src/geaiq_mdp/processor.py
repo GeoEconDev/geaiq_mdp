@@ -438,6 +438,7 @@ class Processor(Reportable):
         estimated_total = info["estimated_total"]
         retrieved_columns = info["retrieved_columns"]
         retrieved_column_names = info["retrieved_column_names"]
+        retrieved_column_types = info.get("retrieved_column_types", {})
         exists_shape_id = info["exists_shape_id"]
         description = info["description"]
 
@@ -449,7 +450,12 @@ class Processor(Reportable):
                 "Retrieved fields": f"{len(retrieved_columns)}",
             },
         )
-        self.info("Query return fields", retrieved_column_names)
+        fields_display = (
+            {name: retrieved_column_types[name] for name in retrieved_column_names}
+            if retrieved_column_types
+            else retrieved_column_names
+        )
+        self.info("Query return fields", fields_display)
         self.info("Description", description)
 
         computed_columns = (
@@ -1099,17 +1105,18 @@ class Processor(Reportable):
             ),
             geometry=geometry,
         )
-        self.info(
-            "Sistema de referencia de coordenadas (CRS)",
-            geodata.crs.to_string() if geodata.crs is not None else "No CRS defined",
-        )
+        if geodata.crs is None:
+            self.warning("No CRS defined — assuming EPSG:4326 (WGS84 lat/lon)")
+            geodata = geodata.set_crs(epsg=4326)
+        else:
+            self.info("Sistema de referencia de coordenadas (CRS)", geodata.crs.to_string())
+
         try:
             geodata = geodata.to_crs(epsg=4326)
         except Exception as err:
             self.error("Error on geometry", [str(err)])
             return False
-        finally:
-            return True
+        return True
 
     @memory_time_logger
     def check_time(self, source):
