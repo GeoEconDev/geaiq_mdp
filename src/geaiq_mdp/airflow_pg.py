@@ -35,7 +35,14 @@ class AirflowPostgreSQLProcessor(Processor):
         start_time = time()
 
         try:
-            df = self.hook.get_pandas_df(sql=query)
+            import pandas as pd
+            conn = self.hook.get_conn()
+            try:
+                df = pd.read_sql(query, conn)
+            finally:
+                conn.close()
+        except ProcessorError:
+            raise
         except Exception as exc:
             self.report.append(
                 {

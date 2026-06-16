@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a23: fix run_query usa get_conn() directo en lugar de get_pandas_df()
+
+**Resumen:** `run_query()` usaba `hook.get_pandas_df()` que en versiones recientes de `apache-airflow-providers-postgres` delega en SQLAlchemy 2.x, cuyo objeto `Connection` no tiene `.cursor()`. Esto causaba `AttributeError: 'Connection' object has no attribute 'cursor'` al ejecutar la query real. La fix reemplaza `get_pandas_df()` por `hook.get_conn()` + `pd.read_sql()` directamente, igual que ya hace `test_source()`.
+
+### Cambios
+
+- **`src/geaiq_mdp/airflow_pg.py`**: `run_query()` usa `hook.get_conn()` + `pd.read_sql(query, conn)` en lugar de `hook.get_pandas_df()`.
+
+---
+
 ## 2026-06-16 — v0.1.0a22: fix PostgreSQL column detection + mejora reporte con conteo de registros
 
 **Resumen:** `AirflowPostgreSQLProcessor.test_source()` siempre devolvía `retrieved_column_names: []` porque `EXPLAIN` no retorna el esquema de columnas. Esto hacía que `check_query` reportara "Query does not solve all columns" para **todos** los campos declarados en fuentes PostgreSQL, aunque el query los incluyera. Además, el reporte no dejaba claro si la query se ejecutó ni cuántos registros devolvió.
