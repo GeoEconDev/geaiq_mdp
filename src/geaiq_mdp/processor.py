@@ -491,7 +491,7 @@ class Processor(Reportable):
             for c in source.columns
             if c.name not in retrieved_column_names and c.eval is None
         } - computed_columns:
-            raise QueryNotSolveAllColumns([c.name for c in column_not_found])
+            raise QueryNotSolveAllColumns(list(column_not_found))
 
         if (
             refcolumn_not_found := set(
