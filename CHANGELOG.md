@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a20: fix QueryNotSolveAllColumns — AttributeError al reportar columnas faltantes
+
+**Resumen:** `check_query` construía `column_not_found` como un `set` de strings (nombres de columna), pero luego iteraba `[c.name for c in column_not_found]` tratando cada string como un objeto con atributo `.name`. Esto causaba `AttributeError: 'str' object has no attribute 'name'` en cualquier fuente con columnas sin resolver en la query.
+
+### Cambios
+
+- **`src/geaiq_mdp/processor.py`**: `raise QueryNotSolveAllColumns(list(column_not_found))` en lugar de `[c.name for c in column_not_found]`.
+
+---
+
 ## 2026-06-16 — v0.1.0a19: fix conn_id por defecto en AirflowPostgreSQLProcessor
 
 **Resumen:** El default `postgres_conn_id="postgres_default"` causaba `The conn_id postgres_default isn't defined` porque esa conexión no existe en Airflow. Se cambia el default a `postgres_staging`, que sí está definida. Para fuentes que requieran otra conexión se puede crear `mdp.{slug}` en Airflow y `resolve_conn_id` la usará automáticamente.
