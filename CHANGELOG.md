@@ -6,6 +6,16 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-16 — v0.1.0a21: fix report_url usa URL interna Docker en vez de URL pública
+
+**Resumen:** `GeoEconAPIDev` y `GeoEconAPIProd` usaban `GEAIQ_API_URL` (apunta a `http://geaiq_api:8000`, la URL interna del contenedor) para construir `static_uri`, que es la base de la `report_url` devuelta por `upload_report()`. El browser no puede acceder a esa URL. Ahora se usa `GEAIQ_API_PUBLIC_URL` (con fallback a `GEAIQ_API_URL`) para `static_uri`, mientras `api_uri` sigue usando `GEAIQ_API_URL` para las llamadas internas.
+
+### Cambios
+
+- **`src/geaiq_mdp/geoecon_api.py`**: `static_uri` usa `GEAIQ_API_PUBLIC_URL` si está definida; `api_uri` sigue usando `GEAIQ_API_URL` para acceso interno.
+
+---
+
 ## 2026-06-16 — v0.1.0a20: fix QueryNotSolveAllColumns — AttributeError al reportar columnas faltantes
 
 **Resumen:** `check_query` construía `column_not_found` como un `set` de strings (nombres de columna), pero luego iteraba `[c.name for c in column_not_found]` tratando cada string como un objeto con atributo `.name`. Esto causaba `AttributeError: 'str' object has no attribute 'name'` en cualquier fuente con columnas sin resolver en la query.
