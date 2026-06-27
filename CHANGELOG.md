@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-27 — v0.1.0a28: check_observables falla claro cuando ningún group_id matchea geometrías
+
+**Resumen:** `check_observables` hacía un `merge` outer entre la data y las geometrías y, cuando los `group_id` (shape.id) **no matcheaban ninguna** geometría, caía silenciosamente al path de autoagregación ("More observables than data") → el **check pasaba "Ok" con 0 datos cargables** y recién el `deploy` fallaba. Caso real: `arg-2022-categoria-ocupacional` con `to_char(id_mod, '00000')` produciendo `' 06413'` (6 chars con espacio inicial) en vez de `'06413'` → 0/513 matches. Ahora, si **ningún** `group_id` de la data matchea una geometría del grupo, el check emite un **error** explícito (con muestra de data vs geometrías y, si detecta espacios, pista de usar `FM00000`). Mini-prueba defensiva: garantiza que el shape.id realmente referencia geometrías existentes antes de habilitar el deploy.
+
+### Cambios
+
+- **`src/geaiq_mdp/processor.py`**: `check_observables()` agrega un guard de cobertura — si `data_ids & obs_ids` es vacío, `self.error(...)` + `return False` (antes pasaba a autoagregación silenciosa).
+
 ## 2026-06-27 — v0.1.0a27: fix KeyError 'group_id' en do_source_selection con shape.id ref + ignore lista
 
 **Resumen:** `do_source_selection()` filtraba con `df["group_id"]`, pero en `read_source()` el rename a `group_id` (`df.rename({shape.id.ref: "group_id"})` / `df.assign(group_id=...)`) ocurre en el paso **siguiente** del pipe. Cuando `shape.id` es un `!ColumnRef` (la columna todavía se llama como el ref, ej. `gid`) **y** `select.data.ignore` es una lista, el `df["group_id"]` lanzaba `KeyError: 'group_id'`. Se reproducía con `arg-2022-categoria-ocupacional` (`shape.id: !ColumnRef gid` + `ignore: [comunas/departamentos inválidos]`). Ahora se resuelve el nombre real de la columna (`shape.id.ref` cuando es ref, sino `"group_id"`). La rama `dict` del mismo método ya era correcta (usaba `column.ref`).

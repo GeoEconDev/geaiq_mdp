@@ -1050,6 +1050,33 @@ class Processor(Reportable):
             {"group_id": group_id_cat, "group_parent_id": group_id_cat}
         )
 
+        # mini-prueba: cobertura del shape.id contra las geometrías existentes.
+        # Si NINGÚN group_id de la data matchea una geometría, el merge outer caería
+        # silenciosamente al path de autoagregación y el check pasaría "Ok" con 0 datos
+        # cargables. Lo convertimos en un error claro (caso típico: gid con espacios/
+        # padding por to_char(.,'00000') en lugar de 'FM00000').
+        data_ids = set(data["group_id"].astype(str))
+        obs_ids = set(observables["group_id"].astype(str))
+        if data_ids and not (data_ids & obs_ids):
+            raw_ids = data["group_id"].astype(str)
+            has_ws = bool((raw_ids != raw_ids.str.strip()).any())
+            hint = (
+                " Hay valores con espacios al inicio/fin — revisar el formato del "
+                "shape.id (ej. to_char(col,'FM00000') en vez de '00000')."
+                if has_ws
+                else ""
+            )
+            self.error(
+                "Ningún group_id (shape.id) de la data matchea geometrías existentes",
+                [
+                    f"{len(data_ids)} group_id en la data, 0 matchean geometrías del "
+                    f"grupo '{source.shape.group.name}'.{hint}",
+                    f"muestra data: {sorted(data_ids)[:5]}",
+                    f"muestra geometrías: {sorted(obs_ids)[:5]}",
+                ],
+            )
+            return False
+
         if not all(
             data[["group_id"]].merge(
                 observables[["group_id"]], on="group_id", how="outer", indicator=True
