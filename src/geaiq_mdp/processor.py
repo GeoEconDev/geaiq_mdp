@@ -1246,6 +1246,32 @@ class Processor(Reportable):
 
         return True
 
+    def check_scales(self, source: Source):
+        # Mini-prueba: las escalas declaradas (shape_scale) deben resolver a un uuid
+        # en el warehouse. Si alguna no resuelve (p.ej. abstractas group-less que no
+        # matchean group=arg), el deploy crashea al crear instancias (scale_uuid None);
+        # lo adelantamos a un error de check claro para que el problema se vea acá y
+        # el deploy no se habilite hasta resolverlo.
+        if self.context is None:
+            return True  # sin anclas de data no podemos resolver escalas; no bloquear
+        try:
+            scales = self.solve_obs_scales(source, self.read_source(source))
+        except Exception as exc:
+            self.error("No se pudieron resolver las escalas declaradas", [str(exc)])
+            return False
+        unresolved = sorted(name for name, sc in (scales or {}).items() if sc is None)
+        if unresolved:
+            self.error(
+                "Escalas declaradas que no resuelven en el warehouse",
+                [
+                    f"No resuelven para el grupo '{source.shape.group.name}': {unresolved}.",
+                    "El deploy fallaría al crear instancias (scale_uuid None). Revisar el "
+                    "registro de esas escalas en el warehouse o el shape_scale del YAML.",
+                ],
+            )
+            return False
+        return True
+
     def check(
         self,
         source: Source,
@@ -1263,6 +1289,7 @@ class Processor(Reportable):
                     if source.shape.geometry is None
                     else self.check_geometry(source)
                 )
+                and self.check_scales(source)
                 and self.check_time(source)
             )
         except ProcessorError as exc:

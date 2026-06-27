@@ -6,6 +6,15 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-27 — v0.1.0a29: el check valida la resolución de escalas (precondición del deploy)
+
+**Resumen:** el `check` pasaba "Ok" aunque las escalas declaradas en `shape_scale` no resolvieran a un uuid en el warehouse; recién el `deploy` crasheaba con `AttributeError: 'NoneType' object has no attribute 'uuid'` en `deploy_instance` (`self.scales[scale].uuid`). Caso real: las abstractas "Nivel Administrativo 0/1/2" están registradas group-less + self-ref, pero `solve_obs_scales` las busca con `group_uuid=<grupo>` → la API devuelve cero → `self.scales` con valores None. Ahora el `check` ejecuta la misma resolución de escalas que el deploy y, si alguna queda en None, emite un **error** explícito (lista las escalas que no resuelven). Así "Check OK" pasa a significar "el deploy va a poder crear las instancias", y el problema se ve en la UI antes de deployar. Para eso el `checker` ahora pasa el `context` (anclas de data) al `check` (igual que el `deployer`).
+
+### Cambios
+
+- **`src/geaiq_mdp/checker.py`**: `checker()` captura `data = load_data(...)` y lo pasa como `context=data` a `check()` (antes el check no tenía las anclas).
+- **`src/geaiq_mdp/processor.py`**: nuevo `check_scales()` en el chain de `check()` — resuelve `solve_obs_scales` y si hay escalas en None → `self.error(...)` + `return False`.
+
 ## 2026-06-27 — v0.1.0a28: check_observables falla claro cuando ningún group_id matchea geometrías
 
 **Resumen:** `check_observables` hacía un `merge` outer entre la data y las geometrías y, cuando los `group_id` (shape.id) **no matcheaban ninguna** geometría, caía silenciosamente al path de autoagregación ("More observables than data") → el **check pasaba "Ok" con 0 datos cargables** y recién el `deploy` fallaba. Caso real: `arg-2022-categoria-ocupacional` con `to_char(id_mod, '00000')` produciendo `' 06413'` (6 chars con espacio inicial) en vez de `'06413'` → 0/513 matches. Ahora, si **ningún** `group_id` de la data matchea una geometría del grupo, el check emite un **error** explícito (con muestra de data vs geometrías y, si detecta espacios, pista de usar `FM00000`). Mini-prueba defensiva: garantiza que el shape.id realmente referencia geometrías existentes antes de habilitar el deploy.

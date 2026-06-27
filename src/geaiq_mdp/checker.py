@@ -11,7 +11,7 @@ def checker(file_iter, target: Environments, only_new=True, reader=None, root=No
     report = []
     reader = reader or PersistentAnchorYAML(typ="safe", pure=True)
 
-    load_data(reader=reader, root=root)
+    data = load_data(reader=reader, root=root)
 
     reader.push_anchors()
 
@@ -25,7 +25,7 @@ def checker(file_iter, target: Environments, only_new=True, reader=None, root=No
             continue
 
         report[-1]["sources"].append(
-            {src.slug: get_processor(src).check(src, target)}
+            {src.slug: get_processor(src).check(src, target, context=data)}
         )
         type_list = [
             m["type"] for s in report[-1]["sources"] for k, ms in s.items() for m in ms
