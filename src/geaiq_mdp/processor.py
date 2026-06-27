@@ -1458,6 +1458,15 @@ class Processor(Reportable):
             )
 
             if isinstance(s, ObservableScale):
+                # Las escalas abstractas (typo:abstract, sin abstract_scale propia)
+                # viven group-less en el warehouse. Forzarles el grupo rompe el
+                # lookup (.get filtra por group_uuid=<grupo> y no matchea el registro
+                # group-less) → devuelve None → el deploy crashea al crear instancias.
+                # Las instancias deployadas referencian la escala abstracta group-less
+                # (ese es el modelo), así que la resolvemos sin grupo; solo las
+                # concretas (con abstract_scale) llevan set_group.
+                if s.abstract_scale is None:
+                    return s
                 return s.set_group(group)
             if isinstance(s, tuple):
                 scale, absscale = s

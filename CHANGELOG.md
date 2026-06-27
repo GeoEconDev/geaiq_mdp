@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-27 — v0.1.0a30: resolver escalas abstractas group-less (fix deploy_instance scale None)
+
+**Resumen:** `get_scale` (en `solve_obs_scales`) hacía `set_group(grupo)` sobre **todas** las `ObservableScale`, incluidas las abstractas (`typo:abstract`, sin `abstract_scale` propia). En el warehouse las abstractas "Nivel Administrativo 0–4" viven **group-less** (group_uuid=NULL, self-ref), así que el lookup con `group_uuid=<grupo>` no las encontraba (`API returns zero`) → `self.scales` con None → `deploy_instance` crasheaba (`'NoneType' object has no attribute 'uuid'`). Las instancias ya deployadas referencian la escala abstracta group-less (uuid único por nivel; p.ej. NA2 = `173cb143`, 4175 instancias), confirmando que ese es el modelo. Fix: para escalas abstractas (`abstract_scale is None`) NO setear grupo → el lookup queda por `name` (requests descarta params None) → resuelve al registro group-less. Las concretas (con `abstract_scale`) siguen con `set_group`.
+
+### Cambios
+
+- **`src/geaiq_mdp/processor.py`**: `get_scale()` — si `s.abstract_scale is None` devuelve la escala sin `set_group` (resuelve group-less); sino `set_group(group)` como antes.
+
 ## 2026-06-27 — v0.1.0a29: el check valida la resolución de escalas (precondición del deploy)
 
 **Resumen:** el `check` pasaba "Ok" aunque las escalas declaradas en `shape_scale` no resolvieran a un uuid en el warehouse; recién el `deploy` crasheaba con `AttributeError: 'NoneType' object has no attribute 'uuid'` en `deploy_instance` (`self.scales[scale].uuid`). Caso real: las abstractas "Nivel Administrativo 0/1/2" están registradas group-less + self-ref, pero `solve_obs_scales` las busca con `group_uuid=<grupo>` → la API devuelve cero → `self.scales` con valores None. Ahora el `check` ejecuta la misma resolución de escalas que el deploy y, si alguna queda en None, emite un **error** explícito (lista las escalas que no resuelven). Así "Check OK" pasa a significar "el deploy va a poder crear las instancias", y el problema se ve en la UI antes de deployar. Para eso el `checker` ahora pasa el `context` (anclas de data) al `check` (igual que el `deployer`).
