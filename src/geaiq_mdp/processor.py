@@ -2,6 +2,8 @@
 from itertools import product
 from typing import TYPE_CHECKING
 import logging
+import os
+import uuid as _uuid
 from time import time
 import pandas as pd
 import numpy as np
@@ -551,6 +553,10 @@ class Processor(Reportable):
     def retrieve_observables(self, slug, shape_group, shape_period):
         start_time = time()
         try:
+            # Fast path opcional (GIQMD_WH_CONN): leer los observables de la DB en vez de la
+            # API paginada (que con 357k celdas tumba el servicio). Misma forma que la API.
+            if os.environ.get("GIQMD_WH_CONN"):
+                return self._retrieve_observables_db(shape_group, shape_period)
             return list(
                 self.geoecon_api.get_observables_by_group(
                     name=shape_group, period=shape_period
@@ -562,6 +568,37 @@ class Processor(Reportable):
                 f"Observable query {slug}:{shape_group}:{shape_period} time",
                 [f"{query_time:0.3f}seg"],
             )
+
+    def _retrieve_observables_db(self, shape_group, shape_period):
+        import psycopg2
+
+        conn = psycopg2.connect(os.environ["GIQMD_WH_CONN"])
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT o.group_id, o.group_parent_id, o.name, s.name, absc.name "
+                "FROM wh.observables o "
+                "JOIN wh.observable_groups g ON g.uuid = o.group_uuid "
+                "JOIN wh.observable_scales s ON s.uuid = o.scale_uuid "
+                "LEFT JOIN wh.observable_scales absc ON absc.uuid = s.abstract_scale_uuid "
+                "JOIN wh.periods p ON p.uuid = o.period_uuid "
+                "WHERE g.name = %s AND p.name = %s",
+                (shape_group, str(shape_period)),
+            )
+            return [
+                {
+                    "group_id": r[0],
+                    "group_parent_id": r[1],
+                    "name": r[2],
+                    "scale": {
+                        "name": r[3],
+                        "abstract_scale": ({"name": r[4]} if r[4] else None),
+                    },
+                }
+                for r in cur.fetchall()
+            ]
+        finally:
+            conn.close()
 
     @memory_time_logger
     def get_observables(self, source: Source):
@@ -1929,6 +1966,13 @@ class Processor(Reportable):
             else geodata.make_valid().to_crs(epsg=4326)
         )
 
+        # Fast path opcional (GIQMD_WH_CONN): para datasets grandes (p.ej. 357k celdas h3)
+        # crear observables+geometrías uno por uno vía API es inviable (~horas) y el read
+        # posterior tumba la API. Si hay conn directa al warehouse, escribir en bloque.
+        if os.environ.get("GIQMD_WH_CONN"):
+            self._bulk_upload_geodata(geodata)
+            return self
+
         n_geometries = len(geodata)
 
         logging.info(f"🗺️- #Geometries %s", n_geometries)
@@ -1944,6 +1988,64 @@ class Processor(Reportable):
                     self.geoecon_api.upload_geometry(obs["uuid"], row["geometry"])
 
         return self
+
+    def _bulk_upload_geodata(self, geodata):
+        """Escritura bulk de observables + geometrías directo al warehouse (psycopg2).
+        Reemplaza el loop por-fila de upload_geodata cuando GIQMD_WH_CONN está seteada.
+        El geodata ya trae todos los campos resueltos (group_id, *_uuid, name, parent,
+        geometry); solo genera un uuid por celda (geometry_uuid == observable uuid).
+        Idempotente: saltea si los observables de (source,group,period) ya existen."""
+        import psycopg2
+        from psycopg2.extras import execute_values
+
+        def _h(x):  # los uuids llegan con guiones; las columnas son bpchar(32)
+            return str(x).replace("-", "")
+
+        recs = geodata.to_wkt().to_dict(orient="records")
+        if not recs:
+            return
+        geoms, obs = [], []
+        for r in recs:
+            u = _uuid.uuid4().hex
+            pp = r["group_parent_id"]
+            geoms.append((u, r["geometry"]))
+            obs.append((
+                u, r["description"], r["reliability"], r["name"],
+                _h(r["class_uuid"]), _h(r["scale_uuid"]), _h(r["group_uuid"]),
+                _h(r["period_uuid"]), _h(r["source_uuid"]), u, str(r["group_id"]),
+                (None if (pp is None or isinstance(pp, float)) else str(pp)),
+            ))
+        conn = psycopg2.connect(os.environ["GIQMD_WH_CONN"])
+        try:
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT count(*) FROM wh.observables "
+                "WHERE source_uuid=%s AND group_uuid=%s AND period_uuid=%s",
+                (obs[0][8], obs[0][6], obs[0][7]),
+            )
+            if cur.fetchone()[0]:
+                logging.info("Bulk geodata: observables ya presentes, skip insert")
+                return
+            execute_values(
+                cur,
+                "INSERT INTO wh.geometries (uuid, geometry) VALUES %s",
+                geoms,
+                template="(%s, ST_GeomFromText(%s, 4326))",
+                page_size=5000,
+            )
+            execute_values(
+                cur,
+                "INSERT INTO wh.observables (uuid, created_at, updated_at, description, "
+                "reliability, name, class_uuid, scale_uuid, group_uuid, period_uuid, "
+                "source_uuid, geometry_uuid, group_id, group_parent_id) VALUES %s",
+                obs,
+                template="(%s, now(), now(), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                page_size=5000,
+            )
+            conn.commit()
+            logging.info("Bulk geodata: %s observables+geometrías insertados", len(obs))
+        finally:
+            conn.close()
 
     def dimension_exploder(self, source: Source):
         df = self.read_source(source)
