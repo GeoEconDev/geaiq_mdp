@@ -652,8 +652,17 @@ class Processor(Reportable):
 
     def do_source_selection(self, source: Source, df: pd.DataFrame):
         to_ignore = source.select and source.select.data and source.select.data.ignore
+        # En read_source, "group_id" se renombra DESPUÉS de este paso
+        # (df.rename({shape.id.ref: "group_id"}) / df.assign(group_id=...)).
+        # Acá la columna todavía se llama como el ref de shape.id cuando es ref,
+        # así que resolvemos el nombre real para no romper con KeyError: 'group_id'.
+        group_col = (
+            source.shape.id.ref
+            if (source.shape and isref(source.shape.id))
+            else "group_id"
+        )
         if to_ignore and isinstance(to_ignore, list):
-            df = df[~df["group_id"].isin(to_ignore)]
+            df = df[~df[group_col].isin(to_ignore)]
         elif to_ignore and isinstance(to_ignore, dict):
             df = df[
                 ~np.any(

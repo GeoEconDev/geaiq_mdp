@@ -6,6 +6,14 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ---
 
+## 2026-06-27 — v0.1.0a27: fix KeyError 'group_id' en do_source_selection con shape.id ref + ignore lista
+
+**Resumen:** `do_source_selection()` filtraba con `df["group_id"]`, pero en `read_source()` el rename a `group_id` (`df.rename({shape.id.ref: "group_id"})` / `df.assign(group_id=...)`) ocurre en el paso **siguiente** del pipe. Cuando `shape.id` es un `!ColumnRef` (la columna todavía se llama como el ref, ej. `gid`) **y** `select.data.ignore` es una lista, el `df["group_id"]` lanzaba `KeyError: 'group_id'`. Se reproducía con `arg-2022-categoria-ocupacional` (`shape.id: !ColumnRef gid` + `ignore: [comunas/departamentos inválidos]`). Ahora se resuelve el nombre real de la columna (`shape.id.ref` cuando es ref, sino `"group_id"`). La rama `dict` del mismo método ya era correcta (usaba `column.ref`).
+
+### Cambios
+
+- **`src/geaiq_mdp/processor.py`**: `do_source_selection()` resuelve `group_col` desde `shape.id.ref` cuando `shape.id` es ref; el filtro de lista usa `df[group_col]` en vez de `df["group_id"]`.
+
 ## 2026-06-16 — v0.1.0a26: fix GeoEconAPIMultipleItems al resolver escalas abstractas por grupo
 
 **Resumen:** `ObservableScale.set_group()` solo asignaba el grupo cuando la escala tenía `abstract_scale` (escala concreta). Para escalas abstractas como "Anexo" (sin padre), `if self.abstract_scale:` era `False` y `group_uuid` quedaba `None`. Al consultar la API con `name='Anexo', group_uuid=None`, devolvía múltiples resultados de distintos grupos (`arg_uni`, `arg_cue`), lanzando `GeoEconAPIMultipleItems`. Ahora `set_group()` siempre asigna el grupo. También se corrigió un bug de variable shadowing en `get_scale()` para el caso `str` donde la condición de filtro era siempre `False`.
