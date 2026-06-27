@@ -1492,11 +1492,22 @@ class Processor(Reportable):
                     None,
                 )
 
-        return {
-            get_name(s).lower(): solv_scale.get(self.geoecon_api)
-            for s in source.scales(df)
-            if (solv_scale := get_scale(s, source.shape.group)) is not None
-        }
+        resolved = {}
+        for s in source.scales(df):
+            solv_scale = get_scale(s, source.shape.group)
+            if solv_scale is None:
+                continue
+            resolved[get_name(s).lower()] = solv_scale.get(self.geoecon_api)
+            # Las instancias referencian la escala ABSTRACTA (group_scale = ABSTRACT_SCALE por
+            # defecto; deploy_instance hace self.scales[group_data["abstract_scale"]]). En el
+            # caso single-resolución (p.ej. h3 res-8) solo se yield-ea la escala concreta, así
+            # que la abstracta no quedaría como key → registrarla también, resuelta group-less.
+            abss = getattr(solv_scale, "abstract_scale", None)
+            if abss is not None and abss.name.lower() not in resolved:
+                abss_solv = get_scale(abss, source.shape.group)
+                if abss_solv is not None:
+                    resolved[abss.name.lower()] = abss_solv.get(self.geoecon_api)
+        return resolved
 
     def delete_data_instance(
         self,
@@ -1755,7 +1766,7 @@ class Processor(Reportable):
         else:
             observables = self.build_observables(source, data)
 
-        if source.select.observables.filtre:
+        if source.select and source.select.observables and source.select.observables.filtre:
             filtrable = observables.merge(data, on="group_id")[
                 ["group_id", *(k.ref for k in source.select.observables.filtre.keys())]
             ]
@@ -1900,6 +1911,12 @@ class Processor(Reportable):
         update_geometry=True,
     ):
         logging.info("🗺️🚧- Processing geometries")
+
+        # La geometría llega "naive" (build_observables arma el GeoDataFrame sin crs, y
+        # get_geometry hace wkt.loads sin CRS). to_crs() sobre geometría sin CRS revienta
+        # ("Cannot transform naive geometries"). Las geometrías del warehouse son WGS84.
+        if geodata.crs is None:
+            geodata = geodata.set_crs(epsg=4326)
 
         geodata["geometry"] = (
             (

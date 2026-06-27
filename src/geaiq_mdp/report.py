@@ -458,7 +458,9 @@ def truncar_tabla(df, max_length=None, chunk_size=None):
         )
         resultados.append(chunk)
 
-    return pd.concat(resultados)
+    # df vacío → n_chunks=0 → resultados=[] → pd.concat([]) revienta ("No objects to
+    # concatenate"). Devolver el df tal cual (vacío) en ese caso.
+    return pd.concat(resultados) if resultados else df
 
 
 def dump_df(df, n=None):
