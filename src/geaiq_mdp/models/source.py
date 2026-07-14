@@ -424,7 +424,13 @@ class Shape(BaseModel):
 
     id: str | ColumnRef
     name: str | ColumnRef | None = None
-    group: ObservableGroup
+    # `group` puede ser un ObservableGroup nombrado (patrón single-country: 1 archivo por país,
+    # p.ej. ecu_geoecon_obs.yml usa `group: *GroupEcu`) o un ColumnRef a una columna del shape
+    # (patrón multi-país: 1 shape con N países, p.ej. world adm0 usa `group: !ColumnRef GE_GROUP`
+    # = iso3-lower por feature). En el caso ColumnRef, giqmd auto-crea un ObservableGroup type=country
+    # + su escala "País" por cada valor único (ver processor.solve_obs_groups). Aditivo: el caso
+    # nombrado mantiene el comportamiento actual intacto (todo el código nuevo va gated por isref()).
+    group: ObservableGroup | ColumnRef
     description: str | ColumnRef | None = None
     parent_id: str | ColumnRef | None = None
     period: Union["Period", ColumnRef]
@@ -443,7 +449,11 @@ class Shape(BaseModel):
 
     def scales(self, df: pd.DataFrame):
         if scale := self.scale:
-            if scale.group is None:
+            # No forzar el grupo cuando `self.group` es un ColumnRef (multi-país): la escala
+            # declarada (típicamente la abstracta "Nivel Administrativo 0", group-less) no debe
+            # heredar un ColumnRef como grupo — las escalas "País" concretas por país se
+            # auto-crean en processor.solve_obs_groups, no acá.
+            if scale.group is None and not isref(self.group):
                 scale.group = self.group
             if isref(scale) and self.abstract_scale is None:
                 for p in df[scale.ref].unique():
