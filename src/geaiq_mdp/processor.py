@@ -602,6 +602,19 @@ class Processor(Reportable):
 
     @memory_time_logger
     def get_observables(self, source: Source):
+        # Multi-país: recuperar observables de TODOS los grupos iso3 auto-creados (no hay un único
+        # `shape.group.name`). Named group → un solo grupo (comportamiento actual).
+        if isref(source.shape.group):
+            group_names = list(self.obs_groups.keys())
+        else:
+            group_names = [source.shape.group.name]
+        raw_observables = [
+            o
+            for group_name in group_names
+            for o in self.retrieve_observables(
+                source.slug, group_name, source.shape.period.name
+            )
+        ]
         obs = pd.DataFrame(
             [
                 (
@@ -611,9 +624,7 @@ class Processor(Reportable):
                     abs["name"] if (abs := o["scale"]["abstract_scale"]) else None,
                     o["name"],
                 )
-                for o in self.retrieve_observables(
-                    source.slug, source.shape.group.name, source.shape.period.name
-                )
+                for o in raw_observables
             ],
             columns=[
                 "group_id",
@@ -1291,6 +1302,11 @@ class Processor(Reportable):
         # el deploy no se habilite hasta resolverlo.
         if self.context is None:
             return True  # sin anclas de data no podemos resolver escalas; no bloquear
+        if isref(source.shape.group):
+            # Multi-país: las escalas "País" concretas se auto-crean por país en el deploy
+            # (solve_obs_groups), no existen aún en el warehouse → no pre-resolver acá. La escala
+            # declarada (abstracta "Nivel Administrativo 0") ya la valida check contra data/.
+            return True
         try:
             scales = self.solve_obs_scales(source, self.read_source(source))
         except Exception as exc:
@@ -1458,10 +1474,67 @@ class Processor(Reportable):
         lambda self, source, *args: f"{source.slug}",
     )
     def solve_obs_groups(self, source: Source, df: pd.DataFrame):
+        # Multi-país: `shape.group` es un ColumnRef (iso3-lower por feature) → auto-crear grupo +
+        # escala País por valor único. Named group → comportamiento actual intacto (.get()).
+        if isref(source.shape.group):
+            return self._solve_obs_groups_by_column(source, df)
         return {
             obs_group.name: obs_group.get(self.geoecon_api)
             for obs_group in source.get_obs_groups(df)
         }
+
+    def _solve_obs_groups_by_column(self, source: Source, df: pd.DataFrame):
+        """`shape.group: !ColumnRef` (adm0 multi-país). Por cada valor único de la columna
+        (iso3-lower) auto-crea (idempotente por name) un ObservableGroup ``type=country`` + su
+        escala concreta **País** bajo la abstracta **Nivel Administrativo 0** — EXACTAMENTE como
+        los ``<iso3>_geoecon_obs.yml`` single-country de América (paridad total: los 27 grupos
+        ya existentes se reusan por get-or-create, no se duplican). Deja
+        ``self.group_pais_scale[iso3] = escala País (con uuid)`` para ``build_observables``."""
+        from geaiq_mdp.enums import ObservableScaleTypeEnum
+
+        abstract0 = next(
+            (
+                s
+                for s in (self.context or [])
+                if isinstance(s, ObservableScale) and s.name == "Nivel Administrativo 0"
+            ),
+            None,
+        )
+        if abstract0 is None:
+            raise NoObservations(
+                "No se encontró la escala abstracta 'Nivel Administrativo 0' en data/ (00_scales.yaml)"
+            )
+
+        group_col = source.shape.group.ref
+        name_col = source.shape.name.ref if isref(source.shape.name) else None
+        names = (
+            df[[group_col, name_col]].drop_duplicates().set_index(group_col)[name_col].to_dict()
+            if name_col
+            else {}
+        )
+
+        self.group_pais_scale = {}
+        resolved = {}
+        for iso3 in source.get_obs_groups(df):
+            key = str(iso3).strip()
+            country_name = names.get(iso3, key)
+            pais_scale = ObservableScale(
+                name="País",
+                description=f"{country_name} (país / Nivel Administrativo 0).",
+                abstract_scale=abstract0,
+                typo=ObservableScaleTypeEnum.UTA,
+            )
+            grp = ObservableGroup(
+                name=key.lower(),
+                typo="country",
+                description=f"Grupo geográfico correspondiente a {country_name} (adm0 mundial).",
+                scales=[pais_scale],
+            )
+            created = grp.create(self.geoecon_api)  # get-or-create del grupo (idempotente)
+            for sub in created.subitems():           # crea la escala País con group set (como init)
+                self.group_pais_scale[key.lower()] = sub.create(self.geoecon_api)
+            resolved[key.lower()] = created
+        return resolved
 
     def solve_obs_scale(
         self, scale: ObservableScale, group: ObservableGroup | None = None
@@ -1585,6 +1658,12 @@ class Processor(Reportable):
         group_data: dict,
     ):
         scale = group_data["abstract_scale"]
+        # Multi-país: el grupo de ESTE layer sale de la columna-grupo (iso3) del group_data, no de
+        # un único `shape.group.name`. Named group → el nombre fijo del grupo (comportamiento actual).
+        if isref(source.shape.group):
+            shape_group_key = str(group_data[source.shape.group.ref]).strip().lower()
+        else:
+            shape_group_key = source.shape.group.name
         period = unref(column.period, group_data)
         period = getattr(period, "name", period)
         class_name = column.class_name(group_data)
@@ -1616,7 +1695,7 @@ class Processor(Reportable):
             indicator_uuid=indicator_dict["uuid"],
             class_uuid=class_dict["uuid"],
             data_period_uuid=self.periods[period].uuid,
-            group_uuid=self.obs_groups[unref(source.shape.group.name, group_data)].uuid,
+            group_uuid=self.obs_groups[shape_group_key].uuid,
             period_uuid=self.periods[unref(source.shape.period.name, group_data)].uuid,
             scale_uuid=self.scales[scale.lower()].uuid,
         )
@@ -1632,7 +1711,7 @@ class Processor(Reportable):
             class_type,
             source.shape.period.name,
             period,
-            source.shape.group.name,
+            shape_group_key,
             source.slug,
         )
 
@@ -1675,6 +1754,11 @@ class Processor(Reportable):
                 },
             )
 
+        # Multi-país: las instancias deben ser POR PAÍS → agrupar también por la columna-grupo
+        # (iso3) para que cada layer resuelva su propio grupo en deploy_instance.
+        if isref(source.shape.group):
+            cols.add(source.shape.group.ref)
+
         if cols:
             return list(cols | {"abstract_scale"})
         else:
@@ -1704,6 +1788,14 @@ class Processor(Reportable):
             raise NoObservations("Cant deploy null observable group")
 
         geometry = self.get_geometry(source, in_data)
+        # Multi-país: cada país usa su escala "País" CONCRETA (group-scoped), resuelta por el
+        # valor de la columna-grupo (iso3) → paridad con América. Named group → resolución normal.
+        if isref(source.shape.group):
+            scale_uuid = in_data[source.shape.group.ref].apply(
+                lambda iso3: str(self.group_pais_scale[str(iso3).strip().lower()].uuid)
+            )
+        else:
+            scale_uuid = resolve_unrefs_uuid(source.shape.scale, in_data, self.scales)
         geodata = gpd.GeoDataFrame(
             {
                 "group_id": in_data["group_id"],
@@ -1711,9 +1803,7 @@ class Processor(Reportable):
                 "class_uuid": resolve_unrefs_uuid(
                     source.shape.obs_class, in_data, self.obs_class
                 ),
-                "scale_uuid": resolve_unrefs_uuid(
-                    source.shape.scale, in_data, self.scales
-                ),
+                "scale_uuid": scale_uuid,
                 "period_uuid": resolve_unrefs_uuid(
                     source.shape.period, in_data, self.periods
                 ),
