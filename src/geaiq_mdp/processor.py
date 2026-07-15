@@ -603,10 +603,24 @@ class Processor(Reportable):
 
     @memory_time_logger
     def get_observables(self, source: Source):
-        # Multi-país: recuperar observables de TODOS los grupos iso3 auto-creados (no hay un único
+        # Multi-país: recuperar observables de TODOS los grupos iso3 (no hay un único
         # `shape.group.name`). Named group → un solo grupo (comportamiento actual).
         if isref(source.shape.group):
-            group_names = list(self.obs_groups.keys())
+            # En DEPLOY, self.obs_groups ya está resuelto (solve_obs_groups get-or-create).
+            # En CHECK (path SQL, geometry None) NO se corre solve_obs_groups → self.obs_groups
+            # no existe. Derivar los nombres de grupo (iso3-lower) de la columna-grupo del propio
+            # source, sin crear nada en el warehouse (retrieve_observables devuelve [] para grupos
+            # inexistentes) → mismo conjunto que usará el deploy.
+            if getattr(self, "obs_groups", None):
+                group_names = list(self.obs_groups.keys())
+            else:
+                df = self.read_source(source)
+                group_names = sorted(
+                    {
+                        str(v).strip().lower()
+                        for v in df[source.shape.group.ref].dropna().unique()
+                    }
+                )
         else:
             group_names = [source.shape.group.name]
         raw_observables = [
