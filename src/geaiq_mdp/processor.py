@@ -20,7 +20,7 @@ from geaiq_mdp.process_logger import ProcessLogger
 from .models import ObservableGroup, ObservableScale, Dimension, Period
 from .models.utils import isref, resolve_unrefs_uuid, resolve_uuids, unref
 from .timeout import timeout, TimeoutException
-from .agg_op import MEASUREMENTUNIT_AGG_MAP
+from .agg_op import MEASUREMENTUNIT_AGG_MAP, agg_empty_value
 from .cache import cache, clean_cache
 from .unit_types import MEASUREMENTUNIT_TYPE_MAP
 from .geoecon_api import (
@@ -1043,10 +1043,7 @@ class Processor(Reportable):
                 raise ObservableWithoutObservation(data_obs.loc[obs_issue.index])
 
         leaf_data = data_obs.loc[without_data & without_childs, data.columns].fillna(
-            value={
-                c.name: eval(f"{MEASUREMENTUNIT_AGG_MAP[c.unit]}([])")
-                for c in source.columns
-            }
+            value={c.name: agg_empty_value(c.unit) for c in source.columns}
         )
         data_obs = data_obs.combine_first(leaf_data)
         data_obs.loc[without_data & without_childs, "_merge"] = "both"
