@@ -537,7 +537,15 @@ def menu():
 def check(ctx, output, format, metadata):
     """Check menu files."""
     geoecon_api: GeoEconAPI = GEOECON_API_MAP[ctx.obj["target"]]()
-    report = output if format == "markdown" else StringIO()
+    # El reporte se arma SIEMPRE en memoria. Antes, con `--format markdown`, era
+    # `report = output`, y eso rompía de dos maneras a la vez:
+    #   1. `output.write(report.getvalue())` reventaba con
+    #      `AttributeError: '…' object has no attribute 'getvalue'`, porque `report`
+    #      era el propio archivo. El único formato utilizable quedaba `html`.
+    #   2. Aun sin eso, `menu.process(report)` ya había escrito el cuerpo directo en
+    #      el archivo, así que el HEAD se agregaba DESPUÉS del cuerpo.
+    # Con StringIO el orden queda head → body → foot para los dos formatos.
+    report = StringIO()
 
     menu = Menu(geoecon_api)
 
@@ -596,7 +604,9 @@ def tags():
 def upload(ctx, output, format, no_upload):
     """Check menu files."""
     geoecon_api: GeoEconAPI = GEOECON_API_MAP[ctx.obj["target"]]()
-    report = output if format == "markdown" else StringIO()
+    # Mismo caso que en `menu check`: con `--format markdown`, `report = output`
+    # hacía reventar `report.getvalue()` y además metía el HEAD después del cuerpo.
+    report = StringIO()
 
     menu = Menu(geoecon_api)
 

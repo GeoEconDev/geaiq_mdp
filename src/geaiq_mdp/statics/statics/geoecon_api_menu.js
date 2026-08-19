@@ -1,4 +1,19 @@
-const endpoint_base = 'https://geoecon-api-dev-699125245692.us-central1.run.app/api/v1'
+// Base de la API contra la que este reporte escribe el menú (ui/tmenu).
+//
+// Estaba hardcodeada a 'https://geoecon-api-dev-699125245692.us-central1.run.app/api/v1',
+// el Cloud Run de la era GCP. Ese servicio hoy devuelve 503 "Service is disabled"
+// — verificado el 2026-08-19 desde la laptop Y desde el VPS, así que no es un corte
+// de red nuestro: está deshabilitado. Con esa URL, cada submit del formulario del
+// reporte iba a un servicio muerto y la fila nunca llegaba a ui.t_menu.
+//
+// La migración a api.geaiq.com quedó a medio hacer: el lado Python ya está
+// migrado (menu.py usa GEAIQ_API_URL con default https://api.geaiq.com) y este
+// estático se quedó atrás. Se toma el valor que el reporte inyecta en
+// window.GEAIQ_API_BASE, y si no está se cae al mismo default que el Python.
+const endpoint_base = (
+    (typeof window !== 'undefined' && window.GEAIQ_API_BASE)
+    || 'https://api.geaiq.com/api/v1'
+).replace(/\/+$/, '')
 
 function updateGeoEconMenuForm(formId) {
     const form = document.getElementById(formId);
