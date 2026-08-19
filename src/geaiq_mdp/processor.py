@@ -1953,6 +1953,42 @@ class Processor(Reportable):
         if observables is None or observables.empty:
             raise NoObservables("Cant deploy null observables")
 
+        # Alinear los dtypes ANTES de agregar, igual que hace `check_observables`.
+        # Sin esto, `check` y `deploy` daban RESULTADOS DISTINTOS con la misma data:
+        #
+        # `get_observables` arma `group_id` y `group_parent_id` como categorías
+        # INDEPENDIENTES y hace `str(o["group_parent_id"])`, así que el parent NULL
+        # de la raíz queda como el string literal "None". El atajo de
+        # `do_source_autoggregation_fix_oppening` sale sin agregar —rellenando los
+        # padres con `default_value`— cuando
+        # `set(group_parent_id) - set(group_id)` es `{"None"}`.
+        #   · en `check`, el cast a la categoría UNIÓN convierte ese "None" en NaN,
+        #     el atajo NO matchea y la agregación corre;
+        #   · en `deploy`, sin cast, "None" sobrevive, el atajo SÍ matchea y los
+        #     padres se escriben con el default.
+        #
+        # Medido el 2026-08-19 sobre arg-arca-demografia-empresarial-adm2: el
+        # dataframe agregado del CHECK daba País/202502 stock 514.453 (la serie
+        # nacional real) y el del DEPLOY daba 0. En el warehouse servido quedaban
+        # Provincia 12.834/12.834 y País 1.116/1.116 en cero, con adm2 correcto.
+        # Afectaba a toda fuente cuyo dato sea sólo de hojas (la otra:
+        # arg-nacimientos-adm2); las que traen los padres en su propia query salen
+        # antes por `all(_merge == "both")` y nunca lo pisaban.
+        #
+        # Lo peor no eran los ceros: era que un `check` en VERDE no predecía el
+        # deploy, y todo el flujo check -> validar -> deploy se apoya en que sí.
+        group_id_cat = pd.CategoricalDtype(
+            sorted(
+                set(data["group_id"].astype(str)).union(
+                    set(observables["group_id"].astype(str))
+                )
+            )
+        )
+        data = data.astype({"group_id": group_id_cat})
+        observables = observables.astype(
+            {"group_id": group_id_cat, "group_parent_id": group_id_cat}
+        )
+
         if not all(
             data[["group_id"]].merge(
                 observables[["group_id"]], on="group_id", how="outer", indicator=True
