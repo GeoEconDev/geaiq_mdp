@@ -39,7 +39,7 @@ try:
         commit_md_yaml,
         is_md_yaml,
     )
-    from geaiq_mdp.menu import Menu
+    from geaiq_mdp.menu import Menu, geoecon_api_url
     from geaiq_mdp.models.geoecon_api import GeoEconAPIModel
     from geaiq_mdp.parsers import parse_menu, parse_metadata
     from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
@@ -49,6 +49,7 @@ try:
         head_markdown,
         foot_markdown,
         head_html,
+        menu_scripts_html,
         foot_html,
         format_report_plain,
         format_report_markdown,
@@ -558,7 +559,17 @@ def check(ctx, output, format, metadata):
     click.echo("Processing menu")
     menu.process(report)
 
-    output.write(HEAD_MAP[format](title=f"Menu processing with {metadata}"))
+    # El head del reporte del menú lleva ADEMÁS el JS del formulario, inline.
+    # Sin él, `postToGeoEcon` queda indefinida y el botón "Agregar/Actualizar
+    # Menú" no hace nada: el reporte se ve bien y no escribe una sola fila en
+    # `ui.t_menu` — que es por qué el catálogo quedó congelado desde julio.
+    # Sólo aplica al formato html (los otros no tienen dónde poner un <script>).
+    extra_head = menu_scripts_html(geoecon_api_url) if format == "html" else ""
+    output.write(
+        HEAD_MAP[format](
+            title=f"Menu processing with {metadata}", extra_head=extra_head
+        )
+    )
     if format == "html":
         output.write(markdown.markdown(report.getvalue(), extensions=["tables"]))
     else:

@@ -15,6 +15,8 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt 
 
+from importlib.resources import files as _package_files
+
 from geaiq_mdp.utils import memory_time_logger
 from geaiq_mdp.version import get_version_string
 
@@ -74,6 +76,7 @@ HTML_HEADER = """
         a {{ color: #1a73e8; }}
         blockquote {{ border-left: 3px solid #ccc; margin: .5em 0; padding: .2em .8em; color: #555; }}
     </style>
+    {extra_head}
 </head>
 <body>
 """
@@ -89,7 +92,7 @@ HTML_FOOTER = """
 """
 
 
-def head_plain(title):
+def head_plain(title, extra_head=""):
     return ""
 
 
@@ -97,7 +100,7 @@ def foot_plain():
     return ""
 
 
-def head_markdown(title):
+def head_markdown(title, extra_head=""):
     return f"# {title}"
 
 
@@ -105,8 +108,60 @@ def foot_markdown():
     return ""
 
 
-def head_html(title):
-    return HTML_HEADER.format(title=title, st=time.time())
+def head_html(title, extra_head=""):
+    return HTML_HEADER.format(title=title, st=time.time(), extra_head=extra_head)
+
+
+# El reporte del menú es el ÚNICO interactivo: cada fila candidata trae un
+# formulario cuyo submit llama a `postToGeoEcon()`. Ese JS vivía SÓLO en un
+# bucket de la era GCP (`make upload-statics` → gs://geoecon-dev-static/) y tras
+# la migración a Linode nunca se republicó: verificado el 2026-08-20,
+# https://api.geaiq.com/geoecon_api_menu.js → 404. Con el <script> apuntando a un
+# archivo que no existe, `postToGeoEcon` quedaba INDEFINIDA y el botón no hacía
+# nada — el reporte se veía perfecto y no escribía una fila. Por eso el JS va
+# INLINE: el reporte se sirve solo, sin bucket, sin CDN y sin un paso de publicación
+# que se pueda volver a olvidar.
+MENU_SCRIPT = "geoecon_api_menu.js"
+
+
+def _read_menu_script():
+    try:
+        return (
+            _package_files("geaiq_mdp") / "statics" / "statics" / MENU_SCRIPT
+        ).read_text(encoding="utf-8")
+    except (FileNotFoundError, ModuleNotFoundError, OSError) as e:
+        return None
+
+
+def menu_scripts_html(api_base):
+    """<script> del formulario del menú, embebido en el propio reporte.
+
+    `api_base` NO es una credencial: es la URL de la API. El token lo pone el
+    browser desde el localStorage del admin (mismo origen), porque los reportes
+    se sirven PÚBLICOS y hornear un token acá sería publicarlo.
+    """
+    script = _read_menu_script()
+    if script is None:
+        # Que se vea en el ARTEFACTO, no en un log: si el JS no viajó en el
+        # paquete, los botones vuelven a no hacer nada y hay que enterarse
+        # mirando el reporte, que es lo único que mira el curador.
+        return (
+            "<script>document.addEventListener('DOMContentLoaded', function () {"
+            "  var b = document.createElement('div');"
+            "  b.style.cssText = 'background:#fdecea;border:1px solid #d93025;"
+            "color:#a50e0e;padding:.6em 1em;margin:0 0 1em 0;border-radius:4px;"
+            "font-weight:600';"
+            "  b.textContent = 'El JS del formulario no viajo en el paquete de giqmd: "
+            "los botones de este reporte NO escriben en el catalogo.';"
+            "  document.body.insertBefore(b, document.body.firstChild);"
+            "});</script>"
+        )
+    return (
+        '<link rel="stylesheet" '
+        'href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">\n'
+        f"<script>window.GEAIQ_API_BASE = {json.dumps(api_base)};</script>\n"
+        f"<script>\n{script}\n</script>"
+    )
 
 
 def foot_html(update_topics=True, view_dashboard=True):
