@@ -1,6 +1,6 @@
 [project]
 name = "geaiq_mdp"
-version = "0.1.0a34"
+version = "0.1.0a35"
 authors = [
   { name="Cristian S. Rocha", email="csrocha@gmail.com" },
 ]
@@ -55,6 +55,12 @@ pythonpath = ["src"]
 [tool.setuptools.packages.find]
 where = ["src/"]
 exclude = ["tests*", "sql*"]
+
+# El JS del formulario del menú se embebe en el reporte y se lee del paquete en
+# runtime (`report.py::_read_menu_script`), así que TIENE que viajar en el wheel:
+# el Dockerfile hace `pip install .` y sin esto setuptools sólo copia los .py.
+[tool.setuptools.package-data]
+geaiq_mdp = ["statics/statics/*.js", "statics/statics/*.css"]
 
 [project.scripts]
 md-check-all = "geaiq_mdp.check:check_all"

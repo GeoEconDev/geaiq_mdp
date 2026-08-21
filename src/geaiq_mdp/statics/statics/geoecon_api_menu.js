@@ -15,6 +15,122 @@ const endpoint_base = (
     || 'https://api.geaiq.com/api/v1'
 ).replace(/\/+$/, '')
 
+// --- Autenticación del browser ----------------------------------------------
+//
+// `/api/v1/ui` está detrás de `require_any_auth`, así que este fetch necesita
+// mandar `Authorization: Bearer`. El JS original fue escrito contra una API SIN
+// auth y no mandaba nada: cada submit se comía un 403 y la fila nunca llegaba a
+// `ui.t_menu`.
+//
+// De dónde sale el token, y por qué NO va embebido en el reporte: los reportes
+// se sirven PÚBLICOS, sin token (`redirect_router` no lleva `require_any_auth`),
+// así que hornear una credencial en el HTML sería publicarla. Pero el reporte se
+// sirve desde el MISMO ORIGEN que el admin (`static.py` sirve los HTML directo
+// desde el dominio de la API justamente para eso), y el admin guarda su token de
+// OAuth2 en `localStorage` de ese origen. O sea: la credencial es la del curador
+// logueado y vive en SU browser, no en el documento.
+//
+// Verificado el 2026-08-20: `https://api.geaiq.com/admin.html` → 200 y
+// `https://api.geaiq.com/reports/menu/ok/menu.md` → 200. Mismo host.
+const TOKEN_KEY = 'gq_tok'
+const REFRESH_KEY = 'gq_refresh'
+const ADMIN_URL = '/admin.html'
+
+function readStorage(key) {
+    try {
+        return localStorage.getItem(key)
+    } catch (e) {
+        // localStorage puede tirar en contextos con cookies de terceros bloqueadas.
+        console.warn('No se pudo leer localStorage: ' + e.message)
+        return null
+    }
+}
+
+class AuthError extends Error { }
+
+// Renueva el access token con el refresh. La forma de la llamada es la MISMA que
+// usa el admin (`admin.html::_doRefresh`): POST /auth/oauth2/refresh con el
+// refresh_token como form-urlencoded — no `/auth/token`, que es el login local.
+async function refreshAccessToken() {
+    const refresh = readStorage(REFRESH_KEY)
+    if (!refresh || refresh === 'null') return null
+    try {
+        const r = await fetch(endpoint_base + '/auth/oauth2/refresh', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ refresh_token: refresh }),
+        })
+        if (!r.ok) return null
+        const d = await r.json()
+        if (!d.access_token) return null
+        try {
+            localStorage.setItem(TOKEN_KEY, d.access_token)
+            if (d.refresh_token) localStorage.setItem(REFRESH_KEY, d.refresh_token)
+        } catch (e) { /* sesión efímera: el token sirve igual para esta request */ }
+        return d.access_token
+    } catch (e) {
+        return null
+    }
+}
+
+// fetch con Authorization. Un 401/403 se reintenta UNA vez con el token renovado;
+// si sigue fallando es sesión vencida y se dice con esas palabras, no con un
+// "Network response was not ok" que manda a mirar la red.
+async function apiFetch(url, options = {}) {
+    let token = readStorage(TOKEN_KEY)
+    if (!token) {
+        throw new AuthError('No hay sesión: abrí ' + ADMIN_URL + ', logueate y recargá este reporte.')
+    }
+    const call = (tok) => fetch(url, {
+        ...options,
+        headers: { ...(options.headers || {}), 'Authorization': 'Bearer ' + tok },
+    })
+
+    let response = await call(token)
+    if (response.status === 401 || response.status === 403) {
+        const renewed = await refreshAccessToken()
+        if (renewed) response = await call(renewed)
+    }
+    if (response.status === 401 || response.status === 403) {
+        throw new AuthError('Sesión vencida o sin permiso: volvé a loguearte en ' + ADMIN_URL + ' y recargá este reporte.')
+    }
+    if (!response.ok) {
+        throw new Error('Network response was not ok ' + response.statusText)
+    }
+    return response
+}
+
+// El aviso va ARRIBA y en el documento, no en la consola: si el curador no ve
+// por qué no escribe, va a apretar los botones igual y a creer que guardó.
+function showAuthBanner(message) {
+    let banner = document.getElementById('geaiq-auth-banner')
+    if (!banner) {
+        banner = document.createElement('div')
+        banner.id = 'geaiq-auth-banner'
+        banner.style.cssText = 'position:sticky;top:0;z-index:9999;background:#fdecea;'
+            + 'border:1px solid #d93025;color:#a50e0e;padding:.6em 1em;margin:0 0 1em 0;'
+            + 'border-radius:4px;font-weight:600;'
+        document.body.insertBefore(banner, document.body.firstChild)
+    }
+    banner.innerHTML = message
+        + ' <a href="' + ADMIN_URL + '" target="_blank" rel="noopener">Abrir el admin</a>'
+}
+
+function reportError(actions, error) {
+    var icons = actions.getElementsByClassName('fa-sync')
+    while (icons.length > 0) { icons[0].remove() }
+
+    var icon = document.createElement('i')
+    icon.className = 'fa-solid fa-skull-crossbones'
+    icon.title = error.message
+    actions.appendChild(icon)
+
+    if (error instanceof AuthError) {
+        showAuthBanner(error.message)
+    }
+    console.warn('Falló la request: ' + error.message)
+}
+
 function updateGeoEconMenuForm(formId) {
     const form = document.getElementById(formId);
     const actions = form.previousElementSibling;
@@ -43,18 +159,13 @@ function updateGeoEconMenuForm(formId) {
     icon.className = 'fa-solid fa-sync fa-spin';
     actions.appendChild(icon);
 
-    fetch(url, {
+    apiFetch(url, {
         method: 'GET',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok ' + response.statusText);
-        }
-        return response.json();
-    })
+    }).then(response => response.json())
         .then(data => {
             var icons = actions.getElementsByClassName('fa-sync');
             while (icons.length > 0) { icons[0].remove(); };
@@ -73,16 +184,7 @@ function updateGeoEconMenuForm(formId) {
             } else {
                 console.info('No responses on GET request: ' + JSON.stringify(data));
             }
-        }).catch(error => {
-            var icons = actions.getElementsByClassName('fa-sync');
-            while (icons.length > 0) { icons[0].remove(); };
-
-            var icon = document.createElement('i');
-            icon.className = 'fa-solid fa-skull-crossbones';
-            actions.appendChild(icon);
-
-            console.warn('There was a problem with the GET request: ' + error.message);
-        });
+        }).catch(error => reportError(actions, error));
 }
 
 function postToGeoEcon(formId) {
@@ -110,7 +212,7 @@ function postToGeoEcon(formId) {
     icon.className = 'fa-solid fa-sync fa-spin';
     actions.appendChild(icon);
 
-    fetch(url, {
+    apiFetch(url, {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
@@ -118,12 +220,7 @@ function postToGeoEcon(formId) {
         },
         body: JSON.stringify(data)
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok ' + response.statusText);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             form.querySelector('.muuid').value = data["uuid"];
 
@@ -136,16 +233,7 @@ function postToGeoEcon(formId) {
 
             console.info('POST successful: ' + JSON.stringify(data));
         })
-        .catch(error => {
-            var icons = actions.getElementsByClassName('fa-sync');
-            while (icons.length > 0) { icons[0].remove(); };
-
-            var icon = document.createElement('i');
-            icon.className = 'fa-solid fa-skull-crossbones';
-            actions.appendChild(icon);
-
-            console.warn('There was a problem with the POST request: ' + error.message);
-        });
+        .catch(error => reportError(actions, error));
 
 }
 
@@ -167,6 +255,11 @@ function toggleForm(formId) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+    // El aviso va ANTES de que el curador apriete nada: sin sesión, cada
+    // "Agregar/Actualizar Menú" es un 403 y la fila no entra al catálogo.
+    if (!readStorage(TOKEN_KEY)) {
+        showAuthBanner('No hay sesión iniciada: los botones de este reporte NO van a escribir en el catálogo.')
+    }
     var forms = document.querySelectorAll('form[id^="ins"]');
     forms.forEach(function (form) {
         updateGeoEconMenuForm(form.id);
