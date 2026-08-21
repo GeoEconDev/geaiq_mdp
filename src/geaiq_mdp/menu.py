@@ -14,8 +14,24 @@ from geaiq_mdp.io_sources import iter_sources
 from geaiq_mdp.parsers import parse_menu, parse_metadata
 from geaiq_mdp.persistent_anchor_yaml import PersistentAnchorYAML
 
-geoecon_api_url = os.environ.get("GEAIQ_API_URL", "https://api.geaiq.com").rstrip("/") + "/api/v1"
-instances_url = f"{geoecon_api_url}/ui/instances/"
+# La base de la API que termina EN EL REPORTE es la que va a usar un BROWSER: el
+# `fetch` del formulario y el `<a href>` de cada instancia. Tiene que ser RELATIVA.
+#
+# `GEAIQ_API_URL` NO sirve para esto: en `airflow-scheduler` —que es justamente el
+# container donde el DAG genera los reportes— vale `http://geaiq_api:8000`, la URL
+# interna de Docker. Inyectarla deja una página pública apuntando a un host que el
+# browser del curador no puede resolver. El default público sólo se veía corriendo
+# giqmd a mano, sin esa env var: por eso la prueba manual del 20-ago dio 201 y el
+# camino del DAG habría fallado igual.
+#
+# Relativa acierta siempre y no la puede envenenar ninguna env var: el reporte se
+# sirve DESDE el dominio de la API (`static.py`), que es la misma premisa que hace
+# funcionar al token de `localStorage` — si no fueran el mismo origen, no habría
+# token que leer y el formulario no podría escribir de todos modos.
+geoecon_api_url = os.environ.get("GEAIQ_PUBLIC_API_URL", "/api/v1").rstrip("/")
+# Sin el `rstrip` de acá el href salía con `//` (`/ui/instances//<uuid>`), porque
+# el f-string de abajo ya pone su propia barra.
+instances_url = f"{geoecon_api_url}/ui/instances"
 
 
 def generate_menu_form(
@@ -155,11 +171,16 @@ class Menu(object):
             reader = PersistentAnchorYAML(typ="safe", pure=True)
             load_data(root=root, reader=reader)
             self.menu = parse_menu(menu_path, reader)
-            report = []
+            # `iter_sources` YA arma el aviso de cada fuente descartada por status,
+            # pero acá se tiraba a una lista local que nadie leía: el reporte salía
+            # con cero formularios y EXIT=0, indistinguible de "no hay candidatos".
+            # Se guarda para que `process()` lo escriba en el ARTEFACTO — un cero
+            # tiene que decir POR QUÉ es cero.
+            self.load_report = []
             self.sources = list(
                 iter_sources(
                     metadata,
-                    report=report,
+                    report=self.load_report,
                     expected_status=SourceStatus.DEPLOYED,
                     reader=reader,
                 )
@@ -256,9 +277,34 @@ class Menu(object):
             }
         )
 
+    def skipped_sources(self):
+        """Fuentes que `load()` descartó, con el motivo. Ver `load()`."""
+        for entry in getattr(self, "load_report", []):
+            for source in entry.get("sources", []):
+                for slug, messages in source.items():
+                    for message in messages:
+                        yield entry.get("file", "?"), slug, message.get("message", "")
+
     def process(self, output):
 
         output.write("# Menu\n")
+
+        # Antes que nada, lo que NO se va a poder curar y por qué. Si esto va al
+        # final —o sólo al log— el curador lee un reporte vacío como si el
+        # catálogo ya estuviera al día.
+        skipped = list(self.skipped_sources())
+        if skipped:
+            output.write(
+                "\n> ⚠️ **Hay fuentes que este reporte NO pudo mirar.** No es que no "
+                "tengan candidatos: quedaron afuera antes de evaluarse. `menu` sólo "
+                "toma fuentes con `status: deployed`, y avanzar ese status es MANUAL "
+                "en el YAML — giqmd nunca lo escribe de vuelta.\n\n"
+            )
+            output.write("| Archivo | Fuente | Motivo |\n|---|---|---|\n")
+            for file, slug, message in skipped:
+                output.write(f"| `{file}` | `{slug}` | {message} |\n")
+            output.write("\n")
+
         output_lesser_candidates = ""
 
         for s in self.sources:
