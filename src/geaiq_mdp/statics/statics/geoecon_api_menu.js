@@ -6,14 +6,23 @@
 // de red nuestro: está deshabilitado. Con esa URL, cada submit del formulario del
 // reporte iba a un servicio muerto y la fila nunca llegaba a ui.t_menu.
 //
-// La migración a api.geaiq.com quedó a medio hacer: el lado Python ya está
-// migrado (menu.py usa GEAIQ_API_URL con default https://api.geaiq.com) y este
-// estático se quedó atrás. Se toma el valor que el reporte inyecta en
-// window.GEAIQ_API_BASE, y si no está se cae al mismo default que el Python.
+// Se toma el valor que el reporte inyecta en window.GEAIQ_API_BASE, y el default
+// es RELATIVO ('/api/v1'), no un host: el reporte se sirve desde el dominio de la
+// API, así que el origen de la página YA es el correcto. Un default absoluto
+// invitaba a que alguien inyectara la URL interna de Docker — y eso fue justo lo
+// que pasó: en airflow-scheduler, GEAIQ_API_URL vale http://geaiq_api:8000, que el
+// browser del curador no puede resolver.
 const endpoint_base = (
     (typeof window !== 'undefined' && window.GEAIQ_API_BASE)
-    || 'https://api.geaiq.com/api/v1'
+    || '/api/v1'
 ).replace(/\/+$/, '')
+
+// `endpoint_base` es RELATIVA (el reporte se sirve desde el dominio de la API), y
+// `new URL('/api/v1/...')` sin base tira `TypeError: Invalid URL`. Esta función es
+// el único lugar que necesita un objeto URL —para armar el query string—, así que
+// resuelve contra el origen de la página. Si algún día la base vuelve a ser
+// absoluta, `new URL` ignora el segundo argumento y esto sigue andando igual.
+const apiURL = (path) => new URL(endpoint_base + path, window.location.origin)
 
 // --- Autenticación del browser ----------------------------------------------
 //
@@ -152,7 +161,7 @@ function updateGeoEconMenuForm(formId) {
         indicator_5: form.querySelector('.indicator_5').value,
     };
 
-    const url = new URL(endpoint_base + '/ui/tmenu' + (uuid ? '/' + uuid : ''));
+    const url = apiURL('/ui/tmenu' + (uuid ? '/' + uuid : ''));
     Object.keys(data).forEach(key => url.searchParams.append(key, data[key]));
 
     var icon = document.createElement('i');
